@@ -9,7 +9,7 @@ import { Calendar, Clock, MapPin, Trash2, Star } from 'lucide-react';
 import { format, isAfter, isBefore, addHours } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import FeedbackModal from '@/components/FeedbackModal';
 
 interface Booking {
@@ -212,7 +212,7 @@ const MyBookings: React.FC = () => {
                         <div className="flex items-center justify-center">
                           <div className="text-center">
                             <div className="mb-2 text-sm font-medium">Booking QR Code</div>
-                            <QRCode
+                            <QRCodeSVG
                               value={`${window.location.origin}/my-bookings/${booking.id}`}
                               size={80}
                               className="mx-auto"
