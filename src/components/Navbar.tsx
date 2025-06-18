@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Calendar, Home, BookOpen, LogOut } from 'lucide-react';
+import { Calendar, Home, BookOpen, User, LogOut } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -39,6 +39,13 @@ const Navbar: React.FC = () => {
                 >
                   <BookOpen className="h-4 w-4" />
                   <span>My Bookings</span>
+                </Link>
+                <Link 
+                  to="/profile" 
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-50"
+                >
+                  <User className="h-4 w-4" />
+                  <span>Profile</span>
                 </Link>
               </div>
             )}

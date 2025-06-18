@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -72,8 +71,39 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  const sendCancellationEmail = async (booking: Booking) => {
+    try {
+      // Get user profile for full name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user?.id)
+        .single();
+
+      const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+
+      await supabase.functions.invoke('send-booking-confirmation', {
+        body: {
+          email: user?.email,
+          userName,
+          resourceName: booking.resources.name,
+          startTime: booking.start_time,
+          endTime: booking.end_time,
+          location: booking.resources.location,
+          bookingId: booking.id,
+          action: 'cancelled'
+        }
+      });
+    } catch (error) {
+      console.error('Error sending cancellation email:', error);
+      // Don't fail the cancellation if email fails
+    }
+  };
+
   const cancelBooking = async (bookingId: string) => {
     try {
+      const bookingToCancel = bookings.find(b => b.id === bookingId);
+      
       const { error } = await supabase
         .from('bookings')
         .update({ status: 'cancelled' })
@@ -81,10 +111,15 @@ const MyBookings: React.FC = () => {
 
       if (error) throw error;
 
+      // Send cancellation email
+      if (bookingToCancel) {
+        await sendCancellationEmail(bookingToCancel);
+      }
+
       await fetchBookings();
       toast({
         title: "Booking cancelled",
-        description: "Your booking has been successfully cancelled"
+        description: "Your booking has been successfully cancelled and a confirmation email has been sent"
       });
     } catch (error) {
       console.error('Error cancelling booking:', error);

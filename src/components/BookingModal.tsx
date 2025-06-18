@@ -40,6 +40,35 @@ const BookingModal: React.FC<BookingModalProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const sendBookingEmail = async (bookingId: string, action: 'created' | 'cancelled' | 'updated') => {
+    try {
+      // Get user profile for full name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user?.id)
+        .single();
+
+      const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
+
+      await supabase.functions.invoke('send-booking-confirmation', {
+        body: {
+          email: user?.email,
+          userName,
+          resourceName: resource.name,
+          startTime: timeSlot.start.toISOString(),
+          endTime: timeSlot.end.toISOString(),
+          location: resource.location,
+          bookingId,
+          action
+        }
+      });
+    } catch (error) {
+      console.error('Error sending booking email:', error);
+      // Don't fail the booking if email fails
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -67,7 +96,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
       }
 
       // Create booking
-      const { error } = await supabase
+      const { data: booking, error } = await supabase
         .from('bookings')
         .insert({
           user_id: user.id,
@@ -76,9 +105,19 @@ const BookingModal: React.FC<BookingModalProps> = ({
           end_time: timeSlot.end.toISOString(),
           notes: notes || null,
           status: 'confirmed'
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Send confirmation email
+      await sendBookingEmail(booking.id, 'created');
+
+      toast({
+        title: "Booking confirmed",
+        description: "Your booking has been created and a confirmation email has been sent"
+      });
 
       onSuccess();
     } catch (error) {
