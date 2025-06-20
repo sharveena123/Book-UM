@@ -87,8 +87,8 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         `}
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="margin: 0; color: #666;">Thank you for using BookingHub!</p>
-          <p style="margin: 5px 0 0 0; color: #666;">Best regards,<br>The BookingHub Team</p>
+          <p style="margin: 0; color: #666;">Thank you for using Book@UM!</p>
+          <p style="margin: 5px 0 0 0; color: #666;">Best regards,<br>The Book@UM Team</p>
         </div>
       </div>
     `;

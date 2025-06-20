@@ -51,7 +51,7 @@ const Landing: React.FC = () => {
     {
       name: "Sarah Johnson",
       role: "Computer Science Student",
-      content: "BookingHub made it so easy to reserve study pods during exam season. The real-time availability is a game changer!",
+      content: "Book@UM made it so easy to reserve study pods during exam season. The real-time availability is a game changer!",
       rating: 5
     },
     {
@@ -76,7 +76,7 @@ const Landing: React.FC = () => {
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-2">
               <Calendar className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold">BookingHub</span>
+              <span className="text-xl font-bold">Book@UM</span>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" asChild>
@@ -156,7 +156,7 @@ firstBlobClassName="top-10 left-0"
 
     <section className="py-16 px-10 bg-blue-80">
   <div className="text-center mb-12">
-    <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose BookingHub?</h2>
+    <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Book@UM?</h2>
     <p className="text-gray-600 max-w-2xl mx-auto">
       Our platform is designed to make resource booking simple, efficient, and reliable
     </p>
@@ -183,7 +183,7 @@ firstBlobClassName="top-10 left-0"
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose BookingHub?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Book@UM?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Our platform is designed to make resource booking simple, efficient, and reliable
             </p>
@@ -240,7 +240,7 @@ firstBlobClassName="top-10 left-0"
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Join the thousands of users who trust BookingHub for their resource booking needs
+            Join the thousands of users who trust Book@UM for their resource booking needs
           </p>
           <div className="space-x-4">
             <Button size="lg" variant="secondary" asChild>
@@ -262,7 +262,7 @@ firstBlobClassName="top-10 left-0"
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <Calendar className="h-6 w-6" />
-                <span className="text-lg font-bold">BookingHub</span>
+                <span className="text-lg font-bold">Book@UM</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Making campus resource booking simple and efficient for everyone.
@@ -297,7 +297,7 @@ firstBlobClassName="top-10 left-0"
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 BookingHub. All rights reserved.</p>
+            <p style={{margin: 0, color: '#666'}}>&copy; 2024 Book@UM. All rights reserved.</p>
           </div>
         </div>
       </footer>

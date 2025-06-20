@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,7 +20,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center space-x-8">
             <Link to="/dashboard" className="flex items-center space-x-2">
               <Calendar className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold">BookingHub</span>
+              <span className="text-xl font-bold">Book@UM</span>
             </Link>
             
             {user && (
