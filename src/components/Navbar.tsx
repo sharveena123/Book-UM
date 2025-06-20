@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Calendar, Home, BookOpen, User, LogOut } from 'lucide-react';
+import { Calendar, FileCog, Home, BookOpen, User, LogOut } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -23,6 +23,7 @@ const Navbar: React.FC = () => {
               <span className="text-xl font-bold">Book@UM</span>
             </Link>
             
+            
             {user && (
               <div className="hidden md:flex space-x-4">
                 <Link 
@@ -33,15 +34,22 @@ const Navbar: React.FC = () => {
                   <span>Dashboard</span>
                 </Link>
                 <Link 
+                to="/resources" 
+                className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-200"
+                >
+              <FileCog className="h-4 w-4" />
+              <span>Resources</span>
+            </Link>
+                <Link 
                   to="/my-bookings" 
-                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-50"
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-200"
                 >
                   <BookOpen className="h-4 w-4" />
                   <span>My Bookings</span>
                 </Link>
                 <Link 
                   to="/profile" 
-                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-50"
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-200"
                 >
                   <User className="h-4 w-4" />
                   <span>Profile</span>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +19,7 @@ interface Resource {
   location: string;
   tags: string[];
   capacity: number;
+  image?: string;
 }
 
 interface Booking {
@@ -189,6 +189,14 @@ const CalendarView: React.FC = () => {
             </Button>
             
             <Card>
+              <div className="w-full h-48 bg-gray-100 rounded-t-lg flex items-center justify-center overflow-hidden mb-2">
+                <img
+                  src={resource.image || '/public/images/placeholder.svg'}
+                  alt={resource.name}
+                  className="object-cover w-full h-full"
+                  onError={e => (e.currentTarget.src = '/public/images/placeholder.svg')}
+                />
+              </div>
               <CardHeader>
                 <CardTitle className="text-2xl">{resource.name}</CardTitle>
                 <CardDescription>{resource.description}</CardDescription>

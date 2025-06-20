@@ -14,10 +14,11 @@ import MyBookings from '@/pages/MyBookings';
 import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import Resources from '@/pages/Resources';
 
 function App() {
   return (
-    <AuthProvider>
+        <AuthProvider>
       <Router>
         <div className="App">
           <Routes>
@@ -27,32 +28,40 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
               }
             />
             <Route
               path="/calendar/:resourceId"
               element={
-                <ProtectedRoute>
-                  <CalendarView />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <CalendarView />
+              </ProtectedRoute>
               }
             />
             <Route
               path="/my-bookings"
               element={
-                <ProtectedRoute>
-                  <MyBookings />
-                </ProtectedRoute>
+              <ProtectedRoute>
+                <MyBookings />
+              </ProtectedRoute>
               }
             />
             <Route
               path="/profile"
               element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resources"
+              element={
                 <ProtectedRoute>
-                  <Profile />
+                  <Resources />
                 </ProtectedRoute>
               }
             />
@@ -65,8 +74,8 @@ function App() {
           <Toaster />
         </div>
       </Router>
-    </AuthProvider>
-  );
+        </AuthProvider>
+);
 }
 
 export default App;

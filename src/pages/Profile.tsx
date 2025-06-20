@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Calendar, Clock } from 'lucide-react';
+import { User, Mail, Calendar, Clock, MapPin, Users, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import { format } from 'date-fns';
@@ -34,11 +33,13 @@ const Profile: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
+  const [favourites, setFavourites] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
       fetchBookingStats();
+      fetchFavourites();
     }
   }, [user]);
 
@@ -86,6 +87,17 @@ const Profile: React.FC = () => {
       setStats({ total, upcoming, completed });
     } catch (error) {
       console.error('Error fetching booking stats:', error);
+    }
+  };
+
+  const fetchFavourites = async () => {
+    if (!user) return;
+    const { data, error } = await (supabase as any)
+      .from('favourites')
+      .select('resource_id, resources(*)')
+      .eq('user_id', user.id);
+    if (!error && data) {
+      setFavourites(data.map((fav: any) => fav.resources));
     }
   };
 
@@ -234,6 +246,48 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Favourites */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Heart className="h-5 w-5 mr-2 text-red-500" />
+                  Favourites
+                </CardTitle>
+                <CardDescription>Your favourite resources</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {favourites.length === 0 ? (
+                  <div className="text-gray-500">No favourites yet.</div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {favourites.map(resource => (
+                      <Card key={resource.id} className="h-full hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <CardTitle>{resource.name}</CardTitle>
+                          <CardDescription>{resource.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-gray-500 flex items-center"><MapPin className="h-4 w-4 mr-1" />{resource.location}</span>
+                            {resource.capacity && (
+                              <span className="text-gray-500 flex items-center"><Users className="h-4 w-4 mr-1" />{resource.capacity}</span>
+                            )}
+                          </div>
+                          {resource.tags && resource.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {resource.tags.map((tag: string) => (
+                                <span key={tag} className="bg-gray-200 rounded-full px-2 py-0.5 text-xs mr-1">{tag}</span>
+                              ))}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
