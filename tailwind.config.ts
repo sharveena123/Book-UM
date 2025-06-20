@@ -19,6 +19,11 @@ export default {
 		},
 		extend: {
 			colors: {
+
+				filter: {
+					"blur-20": "blur(20px)",
+					"blur-25": "blur(25px)",
+					 },
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -69,6 +74,32 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				shine: {
+					"0%": {
+					  backgroundPosition: "0% 50%",
+					},
+					"100%": {
+					  backgroundPosition: "200% 50%",
+					}
+				},
+				"pop-blob": {
+					"0%": { transform: "scale(1)" },
+					"33%": { transform: "scale(1.2)" },
+					"66%": { transform: "scale(0.8)" },
+					"100%": { transform: "scale(1)" },
+				  },
+				"bg-position": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "100%": { backgroundPosition: "100% 50%" },
+				},
+				marquee: {
+					'0%': { transform: 'translateX(0%)' },
+					'100%': { transform: 'translateX(-100%)' },
+				  },
+				  'marquee-vertical': {
+					'0%': { transform: 'translateY(0%)' },
+					'100%': { transform: 'translateY(-100%)' },
+				  },
 				'accordion-down': {
 					from: {
 						height: '0'
@@ -87,6 +118,15 @@ export default {
 				}
 			},
 			animation: {
+				shine: "shine var(--duration, 14s) linear infinite",
+
+				"pop-blob": "pop-blob 5s infinite",
+
+				"bg-position": "bg-position 3s infinite alternate",
+
+				marquee: 'marquee var(--duration) linear infinite',
+        'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
+      
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
 			}

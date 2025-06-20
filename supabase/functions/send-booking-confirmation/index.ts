@@ -1,8 +1,4 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,41 +25,121 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, userName, resourceName, startTime, endTime, location, bookingId, action }: BookingEmailRequest = await req.json();
 
+    // Validate required fields
+    if (!email || !userName || !resourceName || !startTime || !endTime || !location || !bookingId || !action) {
+      throw new Error("Missing required fields");
+    }
+
     const actionText = action === 'created' ? 'confirmed' : action;
     const subject = `Booking ${actionText}: ${resourceName}`;
 
-    const emailResponse = await resend.emails.send({
-      from: "BookingHub <bookings@resend.dev>",
-      to: [email],
-      subject: subject,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #333;">Booking ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}</h1>
-          <p>Hello ${userName},</p>
-          <p>Your booking has been <strong>${actionText}</strong>.</p>
-          
-          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0;">Booking Details</h3>
-            <p><strong>Resource:</strong> ${resourceName}</p>
-            <p><strong>Location:</strong> ${location}</p>
-            <p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleDateString()} from ${new Date(startTime).toLocaleTimeString()} to ${new Date(endTime).toLocaleTimeString()}</p>
-            <p><strong>Booking ID:</strong> ${bookingId}</p>
-          </div>
+    // Get Supabase configuration
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-          ${action !== 'cancelled' ? `
-          <p>Please arrive on time and bring a valid ID for verification.</p>
-          <p>If you need to cancel or modify your booking, please do so at least 1 hour in advance.</p>
-          ` : `
-          <p>Your booking has been successfully cancelled. You can make a new booking anytime on our platform.</p>
-          `}
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Missing Supabase configuration");
+    }
 
-          <p>Thank you for using BookingHub!</p>
-          <p>Best regards,<br>The BookingHub Team</p>
+    // Create Google Maps links
+    const encodedLocation = encodeURIComponent(location);
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedLocation}`;
+
+    // Create email content
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h1 style="color: #333; margin: 0; font-size: 24px;">Booking ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}</h1>
         </div>
-      `,
+        <p>Hello ${userName},</p>
+        <p>Your booking has been <strong>${actionText}</strong>.</p>
+        <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff;">
+          <h3 style="margin-top: 0; color: #333;">Booking Details</h3>
+          <p><strong>Resource:</strong> ${resourceName}</p>
+          <p><strong>Location:</strong> ${location}</p>
+          <p><strong>Date & Time:</strong> ${new Date(startTime).toLocaleDateString()} from ${new Date(startTime).toLocaleTimeString()} to ${new Date(endTime).toLocaleTimeString()}</p>
+          <p><strong>Booking ID:</strong> ${bookingId}</p>
+        </div>
+        
+        ${action !== 'cancelled' ? `
+        <div style="background-color: #e7f3ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h4 style="margin-top: 0; color: #0056b3;">📍 Location & Directions</h4>
+          <p style="margin: 0 0 15px 0;">Need help finding the location?</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="${mapsUrl}" style="background-color: #4285f4; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+              📍 View on Google Maps
+            </a>
+            <a href="${directionsUrl}" style="background-color: #34a853; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block;">
+              🧭 Get Directions
+            </a>
+          </div>
+        </div>
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h4 style="margin-top: 0; color: #856404;">Important Information</h4>
+          <p style="margin: 0;">Please arrive on time and bring a valid ID for verification.</p>
+          <p style="margin: 10px 0 0 0;">If you need to cancel or modify your booking, please do so at least 1 hour in advance.</p>
+        </div>
+        ` : `
+        <div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h4 style="margin-top: 0; color: #721c24;">Cancellation Confirmed</h4>
+          <p style="margin: 0;">Your booking has been successfully cancelled. You can make a new booking anytime on our platform.</p>
+        </div>
+        `}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+          <p style="margin: 0; color: #666;">Thank you for using BookingHub!</p>
+          <p style="margin: 5px 0 0 0; color: #666;">Best regards,<br>The BookingHub Team</p>
+        </div>
+      </div>
+    `;
+
+    // Use Supabase's built-in email service
+    const emailResult = await fetch(`${supabaseUrl}/auth/v1/admin/generate_link`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json',
+        'apikey': supabaseServiceKey,
+      },
+      body: JSON.stringify({
+        type: 'signup',
+        email: email,
+        options: {
+          data: {
+            custom_email_template: emailHtml,
+            custom_subject: subject,
+            booking_details: {
+              resourceName,
+              location,
+              startTime,
+              endTime,
+              bookingId,
+              action
+            }
+          }
+        }
+      })
     });
 
-    return new Response(JSON.stringify(emailResponse), {
+    if (!emailResult.ok) {
+      const errorText = await emailResult.text();
+      console.error('Email service error:', errorText);
+      throw new Error(`Email service error: ${emailResult.status} - ${errorText}`);
+    }
+
+    const result = await emailResult.json();
+    console.log('Email sent successfully via Supabase:', result);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'Email sent successfully via Supabase',
+      data: { 
+        email, 
+        subject, 
+        action,
+        result 
+      }
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +149,11 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error sending booking confirmation:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: error.toString()
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

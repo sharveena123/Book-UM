@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Clock, MapPin, User } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Mail, CheckCircle, Navigation } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
@@ -37,10 +36,52 @@ const BookingModal: React.FC<BookingModalProps> = ({
 }) => {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const sendBookingEmail = async (bookingId: string, action: 'created' | 'cancelled' | 'updated') => {
+  const openInGoogleMaps = (location: string, resourceName: string) => {
+    try {
+      const encodedLocation = encodeURIComponent(location);
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+      window.open(mapsUrl, '_blank');
+      
+      toast({
+        title: "Opening Maps",
+        description: `Opening ${resourceName} location in Google Maps`
+      });
+    } catch (error) {
+      console.error('Error opening Google Maps:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to open Google Maps"
+      });
+    }
+  };
+
+  const openInGoogleMapsDirections = (location: string, resourceName: string) => {
+    try {
+      const encodedLocation = encodeURIComponent(location);
+      const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedLocation}`;
+      window.open(directionsUrl, '_blank');
+      
+      toast({
+        title: "Opening Directions",
+        description: `Getting directions to ${resourceName}`
+      });
+    } catch (error) {
+      console.error('Error opening Google Maps directions:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to open Google Maps directions"
+      });
+    }
+  };
+
+  const sendBookingEmail = async (action: 'created' | 'cancelled' | 'updated') => {
     try {
       // Get user profile for full name
       const { data: profile } = await supabase
@@ -59,18 +100,41 @@ const BookingModal: React.FC<BookingModalProps> = ({
           startTime: timeSlot.start.toISOString(),
           endTime: timeSlot.end.toISOString(),
           location: resource.location,
-          bookingId,
+          bookingId: 'pending', // Will be updated after booking is created
           action
         }
       });
     } catch (error) {
       console.error('Error sending booking email:', error);
-      // Don't fail the booking if email fails
+      throw error; // Re-throw to handle in the calling function
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendEmail = async () => {
+    if (!user) return;
+
+    setEmailLoading(true);
+
+    try {
+      await sendBookingEmail('created');
+      setEmailSent(true);
+      toast({
+        title: "Email sent",
+        description: "A confirmation email has been sent to your email address"
+      });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        variant: "destructive",
+        title: "Email failed",
+        description: "Failed to send confirmation email. Please try again."
+      });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleConfirmBooking = async () => {
     if (!user) return;
 
     setLoading(true);
@@ -111,12 +175,9 @@ const BookingModal: React.FC<BookingModalProps> = ({
 
       if (error) throw error;
 
-      // Send confirmation email
-      await sendBookingEmail(booking.id, 'created');
-
       toast({
         title: "Booking confirmed",
-        description: "Your booking has been created and a confirmation email has been sent"
+        description: "Your booking has been successfully created"
       });
 
       onSuccess();
@@ -132,13 +193,24 @@ const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
+  const handleClose = () => {
+    setEmailSent(false);
+    setNotes('');
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Confirm Booking</DialogTitle>
+          <DialogTitle>
+            {emailSent ? 'Confirm Booking' : 'Review Booking Details'}
+          </DialogTitle>
           <DialogDescription>
-            Review your booking details and add any notes
+            {emailSent 
+              ? 'Please confirm your booking after reviewing the email sent to your address'
+              : 'Review your booking details and send a confirmation email'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -148,9 +220,29 @@ const BookingModal: React.FC<BookingModalProps> = ({
               <Calendar className="h-4 w-4 mr-2 text-gray-500" />
               <span className="font-medium">{resource.name}</span>
             </div>
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-              <span className="text-sm text-gray-600">{resource.location}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                <span className="text-sm text-gray-600">{resource.location}</span>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openInGoogleMaps(resource.location, resource.name)}
+                >
+                  <MapPin className="h-3 w-3 mr-1" />
+                  View
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openInGoogleMapsDirections(resource.location, resource.name)}
+                >
+                  <Navigation className="h-3 w-3 mr-1" />
+                  Directions
+                </Button>
+              </div>
             </div>
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-2 text-gray-500" />
@@ -165,7 +257,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {!emailSent && (
             <div>
               <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
                 Notes (optional)
@@ -178,16 +270,52 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 rows={3}
               />
             </div>
+          )}
 
-            <div className="flex justify-end space-x-3">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+          {emailSent && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                <span className="text-sm text-green-800">
+                  Confirmation email sent to {user?.email}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-3">
+            <Button type="button" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            
+            {!emailSent ? (
+              <Button 
+                type="button" 
+                onClick={handleSendEmail}
+                disabled={emailLoading}
+              >
+                {emailLoading ? (
+                  <>
+                    <Mail className="h-4 w-4 mr-2 animate-pulse" />
+                    Sending Email...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Confirmation Email
+                  </>
+                )}
               </Button>
-              <Button type="submit" disabled={loading}>
+            ) : (
+              <Button 
+                type="button" 
+                onClick={handleConfirmBooking}
+                disabled={loading}
+              >
                 {loading ? 'Creating...' : 'Confirm Booking'}
               </Button>
-            </div>
-          </form>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

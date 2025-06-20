@@ -4,12 +4,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Trash2, Star } from 'lucide-react';
+import { Calendar, Clock, MapPin, Trash2, Star, Mail, CheckCircle, User, Edit, Navigation } from 'lucide-react';
 import { format, isAfter, isBefore, addHours } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import { QRCodeSVG } from 'qrcode.react';
 import FeedbackModal from '@/components/FeedbackModal';
+import EditBookingModal from '@/components/EditBookingModal';
+import LocationPreview from '@/components/LocationPreview';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Booking {
   id: string;
@@ -32,6 +35,12 @@ const MyBookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancellingBooking, setCancellingBooking] = useState<Booking | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -71,6 +80,58 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  // const openInGoogleMaps = (location: string, resourceName: string) => {
+  //   try {
+  //     // Encode the location for URL
+  //     const encodedLocation = encodeURIComponent(location);
+  //     const encodedResourceName = encodeURIComponent(resourceName);
+      
+  //     // Create Google Maps URL with the location
+  //     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+      
+  //     // Open in new tab
+  //     window.open(mapsUrl, '_blank');
+      
+  //     toast({
+  //       title: "Opening Maps",
+  //       description: `Opening ${resourceName} location in Google Maps`
+  //     });
+  //   } catch (error) {
+  //     console.error('Error opening Google Maps:', error);
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Error",
+  //       description: "Failed to open Google Maps"
+  //     });
+  //   }
+  // };
+
+  const openInGoogleMapsDirections = (location: string, resourceName: string) => {
+    try {
+      // Encode the location for URL
+      const encodedLocation = encodeURIComponent(location);
+      const encodedResourceName = encodeURIComponent(resourceName);
+      
+      // Create Google Maps directions URL
+      const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedLocation}`;
+      
+      // Open in new tab
+      window.open(directionsUrl, '_blank');
+      
+      toast({
+        title: "Opening Directions",
+        description: `Getting directions to ${resourceName}`
+      });
+    } catch (error) {
+      console.error('Error opening Google Maps directions:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to open Google Maps directions"
+      });
+    }
+  };
+
   const sendCancellationEmail = async (booking: Booking) => {
     try {
       // Get user profile for full name
@@ -96,31 +157,54 @@ const MyBookings: React.FC = () => {
       });
     } catch (error) {
       console.error('Error sending cancellation email:', error);
-      // Don't fail the cancellation if email fails
+      throw error; // Re-throw to handle in the calling function
     }
   };
 
-  const cancelBooking = async (bookingId: string) => {
+  const handleSendCancellationEmail = async () => {
+    if (!cancellingBooking) return;
+
+    setEmailLoading(true);
+
     try {
-      const bookingToCancel = bookings.find(b => b.id === bookingId);
-      
+      await sendCancellationEmail(cancellingBooking);
+      setEmailSent(true);
+      toast({
+        title: "Email sent",
+        description: "A cancellation confirmation email has been sent to your email address"
+      });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        variant: "destructive",
+        title: "Email failed",
+        description: "Failed to send cancellation email. Please try again."
+      });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleConfirmCancellation = async () => {
+    if (!cancellingBooking) return;
+
+    setCancelLoading(true);
+
+    try {
       const { error } = await supabase
         .from('bookings')
         .update({ status: 'cancelled' })
-        .eq('id', bookingId);
+        .eq('id', cancellingBooking.id);
 
       if (error) throw error;
-
-      // Send cancellation email
-      if (bookingToCancel) {
-        await sendCancellationEmail(bookingToCancel);
-      }
 
       await fetchBookings();
       toast({
         title: "Booking cancelled",
-        description: "Your booking has been successfully cancelled and a confirmation email has been sent"
+        description: "Your booking has been successfully cancelled"
       });
+
+      handleCloseCancelModal();
     } catch (error) {
       console.error('Error cancelling booking:', error);
       toast({
@@ -128,7 +212,21 @@ const MyBookings: React.FC = () => {
         title: "Error",
         description: "Failed to cancel booking"
       });
+    } finally {
+      setCancelLoading(false);
     }
+  };
+
+  const handleCancelBooking = (booking: Booking) => {
+    setCancellingBooking(booking);
+    setEmailSent(false);
+    setShowCancelModal(true);
+  };
+
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false);
+    setCancellingBooking(null);
+    setEmailSent(false);
   };
 
   const getBookingStatus = (booking: Booking) => {
@@ -164,6 +262,22 @@ const MyBookings: React.FC = () => {
 
   const handleFeedbackSuccess = () => {
     setShowFeedbackModal(false);
+    setSelectedBooking(null);
+    fetchBookings();
+  };
+
+  const canEdit = (booking: Booking) => {
+    const status = getBookingStatus(booking);
+    return status === 'upcoming' && isAfter(new Date(booking.start_time), addHours(new Date(), 1));
+  };
+
+  const handleEditBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowEditModal(true);
+  };
+
+  const handleEditSuccess = () => {
+    setShowEditModal(false);
     setSelectedBooking(null);
     fetchBookings();
   };
@@ -227,10 +341,13 @@ const MyBookings: React.FC = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center text-sm">
-                            <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                            {booking.resources.location}
-                          </div>
+                          
+                          <LocationPreview
+                            location={booking.resources.location}
+                            resourceName={booking.resources.name}
+                            onGetDirections={() => openInGoogleMapsDirections(booking.resources.location, booking.resources.name)}
+                          />
+                          
                           {booking.notes && (
                             <div className="text-sm">
                               <span className="font-medium">Notes:</span> {booking.notes}
@@ -256,11 +373,26 @@ const MyBookings: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col space-y-2">
+                          <div className="flex flex-col space-y-2">
+                           
+                     
+                          </div>
+                          
+                          {canEdit(booking) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditBooking(booking)}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Booking
+                            </Button>
+                          )}
                           {canCancel(booking) && (
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => cancelBooking(booking.id)}
+                              onClick={() => handleCancelBooking(booking)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Cancel Booking
@@ -296,6 +428,104 @@ const MyBookings: React.FC = () => {
               onSuccess={handleFeedbackSuccess}
             />
           )}
+
+          {showEditModal && selectedBooking && (
+            <EditBookingModal
+              isOpen={showEditModal}
+              onClose={() => setShowEditModal(false)}
+              booking={selectedBooking}
+              onSuccess={handleEditSuccess}
+            />
+          )}
+
+          {/* Cancellation Confirmation Modal */}
+          <Dialog open={showCancelModal} onOpenChange={handleCloseCancelModal}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {emailSent ? 'Confirm Cancellation' : 'Cancel Booking'}
+                </DialogTitle>
+                <DialogDescription>
+                  {emailSent 
+                    ? 'Please confirm the cancellation after reviewing the email sent to your address'
+                    : 'Send a cancellation confirmation email before cancelling your booking'
+                  }
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                {cancellingBooking && (
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="font-medium">{cancellingBooking.resources.name}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="text-sm text-gray-600">{cancellingBooking.resources.location}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="text-sm text-gray-600">
+                        {format(new Date(cancellingBooking.start_time), 'EEEE, MMMM d, yyyy')} from{' '}
+                        {format(new Date(cancellingBooking.start_time), 'h:mm a')} to {format(new Date(cancellingBooking.end_time), 'h:mm a')}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="text-sm text-gray-600">{user?.email}</span>
+                    </div>
+                  </div>
+                )}
+
+                {emailSent && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                      <span className="text-sm text-green-800">
+                        Cancellation email sent to {user?.email}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-3">
+                  <Button type="button" variant="outline" onClick={handleCloseCancelModal}>
+                    Cancel
+                  </Button>
+                  
+                  {!emailSent ? (
+                    <Button 
+                      type="button" 
+                      onClick={handleSendCancellationEmail}
+                      disabled={emailLoading}
+                    >
+                      {emailLoading ? (
+                        <>
+                          <Mail className="h-4 w-4 mr-2 animate-pulse" />
+                          Sending Email...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4 mr-2" />
+                          Send Cancellation Email
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button 
+                      type="button" 
+                      variant="destructive"
+                      onClick={handleConfirmCancellation}
+                      disabled={cancelLoading}
+                    >
+                      {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </>

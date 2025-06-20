@@ -1,9 +1,18 @@
-
+import { Marquee } from "@/components/magicui/marquee";
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Clock, MapPin, Users, Star, ArrowRight, CheckCircle } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import  {MarqueeDemo}  from "@/components/magicui/MarqueeDemo";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import RotatingText from "@/components/magicui/RotatingText";
+import { motion } from "framer-motion";
+import BlurryBlob from "@/components/animata/background/blurry-blob"; // adjust path if needed
+import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
+import Eight from "@/components/animata/bento-grid/eight";
+import Carousel from "@/components/animata/progress/carousel";
 
 const Landing: React.FC = () => {
   const features = [
@@ -80,30 +89,95 @@ const Landing: React.FC = () => {
           </div>
         </div>
       </nav>
+{/* Hero Section */}
+<section className="relative w-full py-40 min-h-[350px] overflow-hidden px-10">
+      {/* 🌀 Animated Gradient Background */}
+      <BlurryBlob
+  className="absolute z-0 pointer-events-none"
+  firstBlobColor="bg-purple-300"
+  secondBlobColor="bg-blue-300"
+firstBlobClassName="top-10 left-0"
+  secondBlobClassName="top-40 right-10"
+/>
+      {/* 🧱 Main Content */}
+      <div className="relative w-full h-full px-6 py-10 flex flex-col justify-start items-start">
+        <div className="w-full max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row justify-between items-center w-full gap-12">
+            
+            {/* 📌 Left Content */}
+            <div className="text-left max-w-xl text-center">
+              <div className="text-7xl sm:text-7xl font-bold text-gray-900 mb-2">
+                <span>Book </span>
+                <RotatingText
+                  texts={["rooms", "facilities", "labs", "pods"]}
+                  mainClassName="inline-flex px-3 bg-purple-300 text-black overflow-hidden py-1 items-center rounded-lg transition-all duration-300"
+                  staggerFrom="last"
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "-120%" }}
+                  staggerDuration={0.025}
+                  splitLevelClassName="overflow-hidden pb-0.5"
+                  transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                  rotationInterval={2000}
+                />
+                <span> instantly</span>
+              </div>
 
-      {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Book Campus Resources
-            <span className="block text-primary">Anytime, Anywhere</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Streamline your campus experience with our easy-to-use booking platform. 
-            Reserve study spaces, sports facilities, labs, and more with real-time availability.
-          </p>
-          <div className="space-x-4">
-            <Button size="lg" asChild>
-              <Link to="/register">
-                Start Booking <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/login">Sign In</Link>
-            </Button>
+              <p className="text-xl text-center text-gray-700 mb-6">
+                Say goodbye to double bookings and miscommunications. Our app ensures instant, reliable room reservations with a few clicks.
+              </p>
+
+              <div className="flex justify-center gap-4">
+                <Link to="/register">
+                <InteractiveHoverButton>
+                  Start Booking                
+                </InteractiveHoverButton>
+                </Link>
+              </div>
+            </div>
+
+            {/* 🔥 Animation or Image */}
+            <div className="relative z-10 w-full lg:w-1/2">
+            <DotLottieReact
+                src="https://lottie.host/075e17c2-b72d-43b7-bd1d-9836d7ff49e7/ANkHYUdiRH.lottie"
+                loop
+                autoplay
+                style={{ width: "100%", height: "auto" }}
+              />
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+      
+    </section>
+    <section className="py-16 px-10 bg-blue-80">
+      <Eight />
+    </section>
+
+    <section className="py-16 px-10 bg-blue-80">
+  <div className="text-center mb-12">
+    <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose BookingHub?</h2>
+    <p className="text-gray-600 max-w-2xl mx-auto">
+      Our platform is designed to make resource booking simple, efficient, and reliable
+    </p>
+  </div>
+
+  {/* Centering container */}
+  <div
+    className="flex items-center justify-center w-full"
+    style={{ height: '600px' }}
+  >
+    <Carousel
+      baseWidth={600}
+      autoplay={true}
+      autoplayDelay={4000}
+      pauseOnHover={false}
+      loop={true}
+      round={false}
+    />
+  </div>
+</section>
+
 
       {/* Features Section */}
       <section className="py-16 bg-white">
@@ -153,33 +227,13 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Users Say</h2>
-            <p className="text-gray-600">Join thousands of satisfied users</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-gray-600 mb-4">"{testimonial.content}"</p>
-                  <div>
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+ 
+      {/* reviews */}
+      <section className="my-12">
+        <h2 className="text-2xl font-bold text-center mb-6">What our users say</h2>
+        <MarqueeDemo />
       </section>
+
 
       {/* CTA Section */}
       <section className="py-16 bg-primary text-white">

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
+import RippleButton from '@/components/animata/button/ripple-button';
+import { ShineBorder } from '@/components/magicui/shine-border';
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -47,7 +49,13 @@ const Register: React.FC = () => {
             </Link>
           </p>
         </div>
-
+        <div className="relative rounded-xl">
+        <ShineBorder
+          borderWidth={2}
+          duration={10}
+          shineColor={["#ff7661", "#ff9900", "#ff8bb0"]}
+          className="z-0"
+        />
         <Card>
           <CardHeader>
             <CardTitle>Get started</CardTitle>
@@ -83,13 +91,16 @@ const Register: React.FC = () => {
                   minLength={6}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <div className="flex justify-center">
+              <RippleButton type="submit"  disabled={loading}>
                 {loading ? 'Creating account...' : 'Create account'}
-              </Button>
+              </RippleButton>
+              </div>
             </form>
           </CardContent>
         </Card>
       </div>
+    </div>
     </div>
   );
 };

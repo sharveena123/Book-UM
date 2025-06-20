@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from 'lucide-react';
+import { ShineBorder } from '@/components/magicui/shine-border';
+import RippleButton from '@/components/animata/button/ripple-button';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -47,7 +49,14 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        <Card>
+        <div className="relative rounded-xl">
+        <ShineBorder
+          borderWidth={2}
+          duration={10}
+          shineColor={["#ff7661", "#ff9900", "#ff8bb0"]}
+          className="z-0"
+        />
+        <Card className="relative z-10">
           <CardHeader>
             <CardTitle>Welcome back</CardTitle>
             <CardDescription>Enter your credentials to access your bookings</CardDescription>
@@ -72,13 +81,17 @@ const Login: React.FC = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <div className="flex justify-center">
+
+              <RippleButton type="submit"  disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign in'}
-              </Button>
+              </RippleButton>
+              </div>
             </form>
           </CardContent>
         </Card>
       </div>
+    </div>
     </div>
   );
 };
