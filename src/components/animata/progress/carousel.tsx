@@ -14,7 +14,7 @@ export interface CarouselItem {
     title: string;
     description: string;
     id: number;
-    icon?: React.ReactNode;
+    // icon?: React.ReactNode;
     image?: string; // <-- Add this
   }
   
@@ -32,24 +32,24 @@ export interface CarouselProps {
 const DEFAULT_ITEMS: CarouselItem[] = [
     {
       title: "Easy Booking",
-      description: "Book rooms, gear, or services in just a few clicks—no hassle, no delays.",
+      description: "Book rooms or services in just a few clicks—no hassle, no delays.",
       id: 1,
-      icon: <FiFileText className="h-[16px] w-[16px] text-white" />,
-      image: "/images/easy-booking.jpg",
+      // icon: <FiFileText className="h-[16px] w-[16px] text-white" />,
+      image: "/images/instant.jpg",
     },
     {
       title: "Real-Time Availability",
       description: "See what's available instantly. No more guessing or waiting.",
       id: 2,
-      icon: <FiCircle className="h-[16px] w-[16px] text-white" />,
-      image: "/images/real-time-availability.jpg",
+      // icon: <FiCircle className="h-[16px] w-[16px] text-white" />,
+      image: "/images/real-time.jpg",
     },
     {
-      title: "Smart Notifications",
-      description: "Get updates and reminders so you never miss a booking.",
+      title: "Instant Email Confirmations",
+      description: "Every booking action (create, update, cancel) instantly triggers a professional email to your inbox.",
       id: 3,
-      icon: <FiLayers className="h-[16px] w-[16px] text-white" />,
-      image: "/images/smart-notifications.jpg",
+      // icon: <FiLayers className="h-[16px] w-[16px] text-white" />,
+      image: "/images/email.jpg",
     },
     // {
     //   title: "Secure & Reliable",
@@ -59,11 +59,11 @@ const DEFAULT_ITEMS: CarouselItem[] = [
     //   image: "/images/secure-reliable.jpg",
     // },
     {
-      title: "Customizable Experience",
-      description: "Tailor your booking flow, preferences, and integrations easily.",
+      title: "Smart Suggestions",
+      description: "Whether it's your favorite study spot or sports hall, our system suggests resources you've used before",
       id: 5,
-      icon: <FiCode className="h-[16px] w-[16px] text-white" />,
-      image: "/images/customizable-experience.jpg",
+      // icon: <FiCode className="h-[16px] w-[16px] text-white" />,
+      image: "/images/suggest.jpg",
     },
   ];
   
@@ -74,15 +74,16 @@ const SPRING_OPTIONS: Transition = { type: "spring", stiffness: 300, damping: 30
 
 export default function Carousel({
   items = DEFAULT_ITEMS,
-  baseWidth = 300,
+  baseWidth = 500, // Adjusted default width for a better look
   autoplay = false,
   autoplayDelay = 3000,
   pauseOnHover = false,
   loop = false,
   round = false,
 }: CarouselProps): JSX.Element {
-  const containerPadding = 16;
-  const itemWidth = baseWidth - containerPadding * 2;
+  const containerPadding = 20;
+  const [containerWidth, setContainerWidth] = useState(baseWidth);
+  const itemWidth = containerWidth > 0 ? containerWidth - containerPadding * 2 : 0;
   const trackItemOffset = itemWidth + GAP;
 
   const carouselItems = loop ? [...items, items[0]] : items;
@@ -92,6 +93,30 @@ export default function Carousel({
   const [isResetting, setIsResetting] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerWidth(rect.width);
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(updateWidth);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    // Initial width update
+    updateWidth();
+
+    return () => {
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (pauseOnHover && containerRef.current) {
       const container = containerRef.current;
@@ -175,14 +200,14 @@ export default function Carousel({
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden p-4 ${
+      className={`relative overflow-hidden p-5 w-full ${
         round
           ? "rounded-full border border-white"
           : "rounded-[24px] border border-[#222]"
       }`}
       style={{
-        width: `${baseWidth}px`,
-        ...(round && { height: `${baseWidth}px` }),
+        maxWidth: `${baseWidth}px`,
+        ...(round && { aspectRatio: "1/1" }),
       }}
     >
       <motion.div
@@ -219,7 +244,7 @@ export default function Carousel({
   } overflow-hidden cursor-grab active:cursor-grabbing`}
   style={{
     width: itemWidth,
-    height: round ? itemWidth : "100%",
+    height: round ? itemWidth : "auto", // Changed to auto for non-round
     rotateY,
     ...(round && { borderRadius: "50%" }),
   }}
@@ -227,7 +252,7 @@ export default function Carousel({
 >
   {/* 🖼️ Image Section */}
   {!round && item.image && (
-    <div className="w-full h-[180px] overflow-hidden">
+    <div className="w-full h-auto aspect-[4/3] overflow-hidden">
       <img
         src={item.image}
         alt={item.title}
@@ -237,12 +262,12 @@ export default function Carousel({
   )}
 
   {/* 📝 Text Section */}
-  <div className="p-5 flex flex-col gap-2">
-    {item.icon && (
-      <span className="flex h-[28px] w-[28px] items-center justify-center rounded-full bg-[#060010]">
+  <div className="p-4 flex flex-col gap-2">
+    {/* {item.icon && (
+      <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#060010]">
         {item.icon}
       </span>
-    )}
+    )} */}
     <div className="font-black text-lg text-white">{item.title}</div>
     <p className="text-sm text-white">{item.description}</p>
   </div>

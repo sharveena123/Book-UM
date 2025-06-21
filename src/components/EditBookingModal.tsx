@@ -232,7 +232,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
         .eq('id', booking.id);
 
       if (error) throw error;
-      
+
       toast({
         title: "Booking updated",
         description: "Your booking has been successfully updated"
@@ -352,19 +352,19 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               </div>
 
               {/* Notes */}
-              <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes (optional)
-                </label>
-                <Textarea
-                  id="notes"
-                  placeholder="Add any special requirements or notes..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+            <div>
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                Notes (optional)
+              </label>
+              <Textarea
+                id="notes"
+                placeholder="Add any special requirements or notes..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   className="text-sm"
-                />
-              </div>
+              />
+            </div>
             </>
           )}
 

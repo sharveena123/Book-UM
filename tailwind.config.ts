@@ -74,6 +74,10 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				fadeIn: {
+					from: { opacity: "0" },
+					to: { opacity: "1" },
+				},
 				sparkle: {
 					"0%, 100%": { opacity: "0.75", scale: "0.9" },
 					"50%": { opacity: "1", scale: "1" },
@@ -122,6 +126,8 @@ export default {
 				}
 			},
 			animation: {
+				fadeIn: "fadeIn 0.5s ease-in",
+
 				sparkle: "sparkle 2s ease-in-out infinite",
 
 				shine: "shine var(--duration, 14s) linear infinite",

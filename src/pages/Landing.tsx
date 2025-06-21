@@ -15,6 +15,8 @@ import BlurryBlob from "@/components/animata/background/blurry-blob"; // adjust 
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
 import Eight from "@/components/animata/bento-grid/eight";
 import Carousel from "@/components/animata/progress/carousel";
+import  {TextReveal}  from "@/components/animata/text/textreveal";
+
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -194,32 +196,13 @@ firstBlobClassName="top-10 left-0"
   </div>
 </section>
 
-
-      {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Book@UM?</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Our platform is designed to make resource booking simple, efficient, and reliable
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <feature.icon className="h-12 w-12 text-primary mx-auto mb-4" />
-                  <CardTitle>{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
+{/* Text Reveal Section */}
+<section className="py-20 bg-gradient-to-b from-white to-gray-100">
+      <div className="max-w-9xl mx-auto space-y-6 text-center">
+        <TextReveal>
+        From focused study sessions and collaborative meetings to lively sports and vibrant campus events — your perfect space is only a few taps away with seamless booking, instant confirmations, and zero hassle        </TextReveal>
+      </div>
+    </section>
       {/* Facilities Section */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

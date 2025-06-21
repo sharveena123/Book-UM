@@ -49,7 +49,7 @@ if (hasPlaceholders) {
   console.log('- EMAILJS_TEMPLATE_ID_CONFIRMED: for new bookings');
   console.log('- EMAILJS_TEMPLATE_ID_UPDATED: for booking updates');
   console.log('- EMAILJS_TEMPLATE_ID_CANCELLED: for booking cancellations');
-} else {
+    } else {
   console.log('✅ EmailJS credentials appear to be configured');
   console.log('Try creating, updating, or cancelling a booking to test email sending');
 }

@@ -189,7 +189,7 @@ const MyBookings: React.FC = () => {
         .eq('id', cancellingBooking.id);
 
       if (error) throw error;
-      
+
       await fetchBookings();
       toast({
         title: "Booking cancelled",
@@ -472,7 +472,7 @@ const MyBookings: React.FC = () => {
               </DialogHeader>
 
               {cancellingBooking && (
-                <div className="space-y-4">
+              <div className="space-y-4">
                   <div className="bg-gray-50 p-3 rounded-lg space-y-2">
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-2 text-gray-500" />
@@ -491,52 +491,52 @@ const MyBookings: React.FC = () => {
                     </div>
                   </div>
 
-                  {emailSent && (
+                {emailSent && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                      <div className="flex items-center">
+                    <div className="flex items-center">
                         <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
                         <span className="text-xs text-green-800">
-                          Cancellation email sent to {user?.email}
-                        </span>
-                      </div>
+                        Cancellation email sent to {user?.email}
+                      </span>
                     </div>
-                  )}
+                  </div>
+                )}
 
                   <div className="flex justify-end space-x-3 pt-2">
                     <Button variant="outline" size="sm" onClick={handleCloseCancelModal} disabled={cancelLoading}>
                       {emailSent ? 'Back' : 'Cancel'}
-                    </Button>
-                    
-                    {!emailSent ? (
-                      <Button 
-                        onClick={handleSendCancellationEmail}
-                        disabled={emailLoading}
+                  </Button>
+                  
+                  {!emailSent ? (
+                    <Button 
+                      onClick={handleSendCancellationEmail}
+                      disabled={emailLoading}
                         size="sm"
-                      >
-                        {emailLoading ? (
-                          <>
-                            <Mail className="h-4 w-4 mr-2 animate-pulse" />
+                    >
+                      {emailLoading ? (
+                        <>
+                          <Mail className="h-4 w-4 mr-2 animate-pulse" />
                             Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Mail className="h-4 w-4 mr-2" />
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4 mr-2" />
                             Send Email
-                          </>
-                        )}
-                      </Button>
-                    ) : (
-                      <Button 
-                        variant="destructive"
-                        onClick={handleConfirmCancellation}
-                        disabled={cancelLoading}
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="destructive"
+                      onClick={handleConfirmCancellation}
+                      disabled={cancelLoading}
                         size="sm"
-                      >
-                        {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
-                      </Button>
-                    )}
-                  </div>
+                    >
+                      {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+                    </Button>
+                  )}
                 </div>
+              </div>
               )}
             </DialogContent>
           </Dialog>

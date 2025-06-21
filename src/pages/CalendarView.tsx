@@ -104,19 +104,19 @@ const CalendarView: React.FC = () => {
       console.error('Error fetching bookings:', error);
     }
   };
-  
+
   const handleTimeSlotSelect = (start: Date, end: Date) => {
     if (!user) {
       toast({ variant: "destructive", title: "Authentication required", description: "Please sign in to make a booking" });
       return;
     }
-
+    
     const newSlot = { start, end };
-
+    
     // Handle deselection by clearing all slots to enforce a new contiguous selection
     const slotIndex = selectedSlots.findIndex(s => s.start.getTime() === newSlot.start.getTime());
     if (slotIndex !== -1) {
-      setSelectedSlots([]);
+    setSelectedSlots([]);
       return;
     }
 
@@ -244,18 +244,18 @@ const CalendarView: React.FC = () => {
       <div className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-2xl">{resource.name}</CardTitle>
-              <CardDescription>{resource.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <CardHeader>
+                <CardTitle className="text-2xl">{resource.name}</CardTitle>
+                <CardDescription>{resource.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center"><MapPin className="h-4 w-4 mr-2 text-gray-500" />{resource.location}</div>
                 <div className="flex items-center"><Users className="h-4 w-4 mr-2 text-gray-500" />Capacity: {resource.capacity}</div>
                 <div className="flex items-center"><CalendarIcon className="h-4 w-4 mr-2 text-gray-500" />{resource.type}</div>
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex justify-between items-center mb-4">
@@ -285,7 +285,7 @@ const CalendarView: React.FC = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
+          </div>
 
             <table className="w-full border-collapse">
               <thead>
@@ -303,27 +303,27 @@ const CalendarView: React.FC = () => {
               </tbody>
             </table>
             
-            {selectedSlots.length > 0 && (
+          {selectedSlots.length > 0 && (
               <div className="mt-6 text-center">
                 <p className="font-semibold mb-4">
                   {formatSelectedSlots()}
                 </p>
                 <Button size="lg" onClick={() => setShowBookingModal(true)}>Book Now</Button>
-              </div>
-            )}
+            </div>
+          )}
           </div>
         </div>
       </div>
-      
+
       {showBookingModal && (
-        <BookingModal
-          isOpen={showBookingModal}
-          onClose={() => setShowBookingModal(false)}
-          resource={resource}
-          timeSlots={selectedSlots}
-          onSuccess={handleBookingSuccess}
-        />
-      )}
+            <BookingModal
+              isOpen={showBookingModal}
+              onClose={() => setShowBookingModal(false)}
+              resource={resource}
+              timeSlots={selectedSlots}
+              onSuccess={handleBookingSuccess}
+            />
+          )}
     </>
   );
 };
