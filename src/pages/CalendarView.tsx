@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import BookingModal from '@/components/BookingModal';
 import CalendarGrid from '@/components/CalendarGrid';
-import { format, addDays, startOfDay } from 'date-fns';
+import { format, addDays, startOfDay, startOfWeek } from 'date-fns';
 
 interface Resource {
   id: string;
@@ -40,14 +40,35 @@ const CalendarView: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: Date; end: Date } | null>(null);
+  const [selectedSlots, setSelectedSlots] = useState<{ start: Date; end: Date }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (resourceId) {
       fetchResource();
       fetchBookings();
-      subscribeToBookings();
+      
+      // Set up subscription
+      const channel = supabase
+        .channel(`booking-changes-${resourceId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `resource_id=eq.${resourceId}`
+          },
+          () => {
+            fetchBookings();
+          }
+        )
+        .subscribe();
+
+      // Cleanup function
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [resourceId]);
 
@@ -55,7 +76,12 @@ const CalendarView: React.FC = () => {
     if (resourceId) {
       fetchBookings();
     }
-  }, [selectedDate, resourceId]);
+  }, [selectedDate.getMonth(), selectedDate.getFullYear(), resourceId]);
+
+  // Scroll to top when component mounts or resourceId changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [resourceId]);
 
   const fetchResource = async () => {
     try {
@@ -81,15 +107,22 @@ const CalendarView: React.FC = () => {
 
   const fetchBookings = async () => {
     try {
-      const startDate = startOfDay(selectedDate);
-      const endDate = addDays(startDate, 7);
+      // Get the first day of the month for the selected date
+      const firstDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+      // Get the last day of the month
+      const lastDayOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+      
+      // Get the start of the week for the first day (Sunday)
+      const startOfWeekFirst = startOfWeek(firstDayOfMonth, { weekStartsOn: 0 });
+      // Get the end of the week for the last day (Saturday)
+      const endOfWeekLast = addDays(startOfWeek(lastDayOfMonth, { weekStartsOn: 0 }), 6);
 
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
         .eq('resource_id', resourceId)
-        .gte('start_time', startDate.toISOString())
-        .lt('start_time', endDate.toISOString())
+        .gte('start_time', startOfWeekFirst.toISOString())
+        .lte('start_time', endOfWeekLast.toISOString())
         .eq('status', 'confirmed');
 
       if (error) throw error;
@@ -97,28 +130,6 @@ const CalendarView: React.FC = () => {
     } catch (error) {
       console.error('Error fetching bookings:', error);
     }
-  };
-
-  const subscribeToBookings = () => {
-    const channel = supabase
-      .channel('booking-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'bookings',
-          filter: `resource_id=eq.${resourceId}`
-        },
-        () => {
-          fetchBookings();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   };
 
   const handleTimeSlotSelect = (start: Date, end: Date) => {
@@ -130,14 +141,20 @@ const CalendarView: React.FC = () => {
       });
       return;
     }
+    
+    console.log('Setting time slot:', { start, end });
+    
+    // Replace existing selection with new slot (only allow 1 slot per booking)
+    setSelectedSlots([{ start, end }]);
+  };
 
-    setSelectedTimeSlot({ start, end });
-    setShowBookingModal(true);
+  const handleClearSelection = () => {
+    setSelectedSlots([]);
   };
 
   const handleBookingSuccess = () => {
     setShowBookingModal(false);
-    setSelectedTimeSlot(null);
+    setSelectedSlots([]);
     fetchBookings();
     toast({
       title: "Booking confirmed",
@@ -149,7 +166,7 @@ const CalendarView: React.FC = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center pt-16">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
       </>
@@ -160,7 +177,7 @@ const CalendarView: React.FC = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center pt-16">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Resource not found</h2>
             <Button onClick={() => navigate('/dashboard')}>
@@ -176,7 +193,7 @@ const CalendarView: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
             <Button 
@@ -189,14 +206,30 @@ const CalendarView: React.FC = () => {
             </Button>
             
             <Card>
-              <div className="w-full h-48 bg-gray-100 rounded-t-lg flex items-center justify-center overflow-hidden mb-2">
-                <img
-                  src={resource.image || '/public/images/placeholder.svg'}
-                  alt={resource.name}
-                  className="object-cover w-full h-full"
-                  onError={e => (e.currentTarget.src = '/public/images/placeholder.svg')}
-                />
+              {/* AI Generated Image Section */}
+              <div className="relative h-64 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg overflow-hidden">
+                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <div className="text-6xl mb-4">
+                      {resource.type === 'room' && '🏢'}
+                      {resource.type === 'equipment' && '🔧'}
+                      {resource.type === 'vehicle' && '🚗'}
+                      {resource.type === 'facility' && '🏟️'}
+                      {resource.type === 'lab' && '🧪'}
+                      {resource.type === 'studio' && '🎨'}
+                      {resource.type === 'auditorium' && '🎭'}
+                      {resource.type === 'gym' && '💪'}
+                      {resource.type === 'library' && '📚'}
+                      {resource.type === 'cafeteria' && '🍽️'}
+                      {!['room', 'equipment', 'vehicle', 'facility', 'lab', 'studio', 'auditorium', 'gym', 'library', 'cafeteria'].includes(resource.type) && '🏛️'}
+                    </div>
+                    <div className="text-2xl font-bold">{resource.name}</div>
+                  </div>
+                </div>
               </div>
+              
+              {/* Information Section */}
               <CardHeader>
                 <CardTitle className="text-2xl">{resource.name}</CardTitle>
                 <CardDescription>{resource.description}</CardDescription>
@@ -224,15 +257,32 @@ const CalendarView: React.FC = () => {
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
             bookings={bookings}
+            selectedSlots={selectedSlots}
             onTimeSlotSelect={handleTimeSlotSelect}
+            onClearSelection={handleClearSelection}
+            resource={resource}
           />
 
-          {showBookingModal && selectedTimeSlot && (
+          {/* Book Selected Slots Button */}
+          {selectedSlots.length > 0 && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                onClick={() => setShowBookingModal(true)}
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700 px-8"
+              >
+                <Calendar className="h-5 w-5 mr-2" />
+                Book Time Slot
+              </Button>
+            </div>
+          )}
+
+          {showBookingModal && selectedSlots.length > 0 && (
             <BookingModal
               isOpen={showBookingModal}
               onClose={() => setShowBookingModal(false)}
               resource={resource}
-              timeSlot={selectedTimeSlot}
+              timeSlots={selectedSlots}
               onSuccess={handleBookingSuccess}
             />
           )}

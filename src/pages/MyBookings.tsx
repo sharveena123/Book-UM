@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Trash2, Star, Mail, CheckCircle, User, Edit, Navigation } from 'lucide-react';
+import { Calendar, Clock, MapPin, Trash2, Star, Mail, CheckCircle, User, Edit } from 'lucide-react';
 import { format, isAfter, isBefore, addHours } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
@@ -13,15 +13,16 @@ import FeedbackModal from '@/components/FeedbackModal';
 import EditBookingModal from '@/components/EditBookingModal';
 import LocationPreview from '@/components/LocationPreview';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Booking {
   id: string;
   start_time: string;
   end_time: string;
   status: string;
-  notes: string;
-  rating: number;
-  feedback: string;
+  notes: string | null;
+  rating: number | null;
+  feedback: string | null;
   resources: {
     id: string;
     name: string;
@@ -31,7 +32,8 @@ interface Booking {
 }
 
 const MyBookings: React.FC = () => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
+  const [pastBookings, setPastBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -50,24 +52,33 @@ const MyBookings: React.FC = () => {
     }
   }, [user]);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const fetchBookings = async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: upcomingData, error: upcomingError } = await supabase
         .from('bookings')
-        .select(`
-          *,
-          resources (
-            id,
-            name,
-            type,
-            location
-          )
-        `)
-        .eq('user_id', user?.id)
+        .select(`*, resources(id, name, type, location)`)
+        .eq('user_id', user!.id)
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true });
+
+      if (upcomingError) throw upcomingError;
+      setUpcomingBookings(upcomingData || []);
+
+      const { data: pastData, error: pastError } = await supabase
+        .from('bookings')
+        .select(`*, resources(id, name, type, location)`)
+        .eq('user_id', user!.id)
+        .lt('start_time', new Date().toISOString())
         .order('start_time', { ascending: false });
 
-      if (error) throw error;
-      setBookings(data || []);
+      if (pastError) throw pastError;
+      setPastBookings(pastData || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast({
@@ -231,12 +242,9 @@ const MyBookings: React.FC = () => {
 
   const getBookingStatus = (booking: Booking) => {
     const now = new Date();
-    const startTime = new Date(booking.start_time);
-    const endTime = new Date(booking.end_time);
-
     if (booking.status === 'cancelled') return 'cancelled';
-    if (isAfter(now, endTime)) return 'completed';
-    if (isBefore(now, startTime)) return 'upcoming';
+    if (isAfter(now, new Date(booking.end_time))) return 'completed';
+    if (isBefore(now, new Date(booking.start_time))) return 'upcoming';
     return 'active';
   };
 
@@ -251,13 +259,11 @@ const MyBookings: React.FC = () => {
   };
 
   const canCancel = (booking: Booking) => {
-    const status = getBookingStatus(booking);
-    return status === 'upcoming' && isAfter(new Date(booking.start_time), addHours(new Date(), 1));
+    return getBookingStatus(booking) === 'upcoming' && isAfter(new Date(booking.start_time), addHours(new Date(), 1));
   };
 
   const canProvideFeedback = (booking: Booking) => {
-    const status = getBookingStatus(booking);
-    return status === 'completed' && !booking.rating;
+    return getBookingStatus(booking) === 'completed' && !booking.rating;
   };
 
   const handleFeedbackSuccess = () => {
@@ -267,8 +273,7 @@ const MyBookings: React.FC = () => {
   };
 
   const canEdit = (booking: Booking) => {
-    const status = getBookingStatus(booking);
-    return status === 'upcoming' && isAfter(new Date(booking.start_time), addHours(new Date(), 1));
+    return getBookingStatus(booking) === 'upcoming' && isAfter(new Date(booking.start_time), addHours(new Date(), 1));
   };
 
   const handleEditBooking = (booking: Booking) => {
@@ -281,12 +286,111 @@ const MyBookings: React.FC = () => {
     setSelectedBooking(null);
     fetchBookings();
   };
+  
+  const renderBookingCard = (booking: Booking) => {
+    const status = getBookingStatus(booking);
+    return (
+      <Card key={booking.id}>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-xl">{booking.resources.name}</CardTitle>
+              <CardDescription>{booking.resources.type}</CardDescription>
+            </div>
+            <Badge className={getStatusColor(status)}>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center text-sm">
+                <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                <div>
+                  <div>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</div>
+                  <div className="text-gray-600">
+                    {format(new Date(booking.start_time), 'h:mm a')} - {format(new Date(booking.end_time), 'h:mm a')}
+                  </div>
+                </div>
+              </div>
+              
+              <LocationPreview
+                location={booking.resources.location}
+                resourceName={booking.resources.name}
+                onGetDirections={() => openInGoogleMapsDirections(booking.resources.location, booking.resources.name)}
+              />
+              
+              {booking.notes && (
+                <div className="text-sm">
+                  <span className="font-medium">Notes:</span> {booking.notes}
+                </div>
+              )}
+              {booking.rating && (
+                <div className="flex items-center text-sm">
+                  <Star className="h-4 w-4 mr-1 text-yellow-500 fill-current" />
+                  <span>{booking.rating}/5 stars</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-center">
+              <div className="text-center">
+                <div className="mb-2 text-sm font-medium">Booking QR Code</div>
+                <QRCodeSVG
+                  value={`${window.location.origin}/my-bookings/${booking.id}`}
+                  size={80}
+                  className="mx-auto"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              {canEdit(booking) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEditBooking(booking)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Booking
+                </Button>
+              )}
+              {canCancel(booking) && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleCancelBooking(booking)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Cancel Booking
+                </Button>
+              )}
+              {canProvideFeedback(booking) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedBooking(booking);
+                    setShowFeedbackModal(true);
+                  }}
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  Rate & Review
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center pt-16">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
       </>
@@ -296,129 +400,48 @@ const MyBookings: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
             <p className="text-gray-600">View and manage your current and past bookings</p>
           </div>
 
-          {bookings.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings yet</h3>
-              <p className="text-gray-600 mb-4">Start by booking a resource from the dashboard</p>
-              <Button onClick={() => window.location.href = '/dashboard'}>
-                Browse Resources
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {bookings.map((booking) => {
-                const status = getBookingStatus(booking);
-                return (
-                  <Card key={booking.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-xl">{booking.resources.name}</CardTitle>
-                          <CardDescription>{booking.resources.type}</CardDescription>
-                        </div>
-                        <Badge className={getStatusColor(status)}>
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center text-sm">
-                            <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                            <div>
-                              <div>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</div>
-                              <div className="text-gray-600">
-                                {format(new Date(booking.start_time), 'h:mm a')} - {format(new Date(booking.end_time), 'h:mm a')}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <LocationPreview
-                            location={booking.resources.location}
-                            resourceName={booking.resources.name}
-                            onGetDirections={() => openInGoogleMapsDirections(booking.resources.location, booking.resources.name)}
-                          />
-                          
-                          {booking.notes && (
-                            <div className="text-sm">
-                              <span className="font-medium">Notes:</span> {booking.notes}
-                            </div>
-                          )}
-                          {booking.rating && (
-                            <div className="flex items-center text-sm">
-                              <Star className="h-4 w-4 mr-1 text-yellow-500 fill-current" />
-                              <span>{booking.rating}/5 stars</span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="mb-2 text-sm font-medium">Booking QR Code</div>
-                            <QRCodeSVG
-                              value={`${window.location.origin}/my-bookings/${booking.id}`}
-                              size={80}
-                              className="mx-auto"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col space-y-2">
-                          <div className="flex flex-col space-y-2">
-                           
-                     
-                          </div>
-                          
-                          {canEdit(booking) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEditBooking(booking)}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Booking
-                            </Button>
-                          )}
-                          {canCancel(booking) && (
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleCancelBooking(booking)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Cancel Booking
-                            </Button>
-                          )}
-                          {canProvideFeedback(booking) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedBooking(booking);
-                                setShowFeedbackModal(true);
-                              }}
-                            >
-                              <Star className="h-4 w-4 mr-2" />
-                              Rate & Review
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+          <Tabs defaultValue="upcoming" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upcoming">
+              {upcomingBookings.length > 0 ? (
+                <div className="space-y-6 mt-6">
+                  {upcomingBookings.map(renderBookingCard)}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming bookings</h3>
+                  <p className="text-gray-600 mb-4">Your future reservations will appear here.</p>
+                  <Button onClick={() => window.location.href = '/dashboard'}>
+                    Book a Resource
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="history">
+              {pastBookings.length > 0 ? (
+                <div className="space-y-6 mt-6">
+                  {pastBookings.map(renderBookingCard)}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No booking history</h3>
+                  <p className="text-gray-600">Your completed and cancelled bookings will appear here.</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
 
           {showFeedbackModal && selectedBooking && (
             <FeedbackModal
@@ -458,7 +481,7 @@ const MyBookings: React.FC = () => {
                   <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="font-medium">{cancellingBooking.resources.name}</span>
+                      <span className="font-semibold">{cancellingBooking.resources.name}</span>
                     </div>
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-2 text-gray-500" />

@@ -35,6 +35,11 @@ const Resources: React.FC = () => {
     fetchResources();
   }, []);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     filterResources();
   }, [resources, searchTerm, selectedType]);
@@ -117,7 +122,7 @@ const Resources: React.FC = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center pt-16">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
       </>
@@ -127,7 +132,7 @@ const Resources: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pt-16">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-12">
           <section className="bg-white rounded-lg shadow p-6">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
@@ -163,41 +168,75 @@ const Resources: React.FC = () => {
                 <div className="col-span-full text-center text-gray-500">No resources found.</div>
               ) : (
                 filteredResources.map(resource => (
-                  <Card key={resource.id} className="h-full hover:shadow-lg transition-shadow flex flex-col justify-between">
-                    <CardHeader className="flex flex-row justify-between items-start">
-                      <div>
-                        <CardTitle>{resource.name}</CardTitle>
-                        <CardDescription>{resource.description}</CardDescription>
+                  <Card key={resource.id} className="h-full hover:shadow-lg transition-shadow flex flex-col">
+                    {/* Image Section */}
+                    <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg overflow-hidden">
+                      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-white text-center">
+                          <div className="text-4xl mb-2">
+                            {resource.type === 'room' && '🏢'}
+                            {resource.type === 'equipment' && '🔧'}
+                            {resource.type === 'vehicle' && '🚗'}
+                            {resource.type === 'facility' && '🏟️'}
+                            {resource.type === 'lab' && '🧪'}
+                            {resource.type === 'studio' && '🎨'}
+                            {resource.type === 'auditorium' && '🎭'}
+                            {resource.type === 'gym' && '💪'}
+                            {resource.type === 'library' && '📚'}
+                            {resource.type === 'cafeteria' && '🍽️'}
+                            {!['room', 'equipment', 'vehicle', 'facility', 'lab', 'studio', 'auditorium', 'gym', 'library', 'cafeteria'].includes(resource.type) && '🏛️'}
+                          </div>
+                          <div className="text-lg font-semibold">{resource.name}</div>
+                        </div>
                       </div>
                       <button
                         aria-label={favourites.includes(resource.id) ? 'Remove from favourites' : 'Add to favourites'}
                         onClick={() => toggleFavourite(resource.id)}
-                        className="ml-2 mt-1"
+                        className="absolute top-3 right-3 z-10"
                       >
-                        <Heart className={`h-6 w-6 transition-colors ${favourites.includes(resource.id) ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-500'}`} />
+                        <Heart className={`h-6 w-6 transition-colors ${favourites.includes(resource.id) ? 'fill-red-500 text-red-500' : 'text-white hover:text-red-500'}`} />
                       </button>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge>{resource.type}</Badge>
-                          <span className="text-gray-500 flex items-center"><MapPin className="h-4 w-4 mr-1" />{resource.location}</span>
+                    </div>
+                    
+                    {/* Information Section */}
+                    <div className="flex-1 p-6 flex flex-col">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold mb-2">{resource.name}</h3>
+                        <p className="text-gray-600 mb-4 line-clamp-2">{resource.description}</p>
+                        
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">{resource.type}</Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <MapPin className="h-4 w-4" />
+                            <span>{resource.location}</span>
+                          </div>
                           {resource.capacity && (
-                            <span className="text-gray-500 flex items-center"><Users className="h-4 w-4 mr-1" />{resource.capacity}</span>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <Users className="h-4 w-4" />
+                              <span>Capacity: {resource.capacity}</span>
+                            </div>
                           )}
                         </div>
+                        
                         {resource.tags && resource.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {resource.tags.map(tag => (
-                              <Badge key={tag} variant="secondary">{tag}</Badge>
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {resource.tags.slice(0, 3).map(tag => (
+                              <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
                             ))}
+                            {resource.tags.length > 3 && (
+                              <Badge variant="outline" className="text-xs">+{resource.tags.length - 3} more</Badge>
+                            )}
                           </div>
                         )}
                       </div>
-                      <Button asChild className="mt-4 w-full" variant="secondary">
+                      
+                      <Button asChild className="w-full mt-auto">
                         <Link to={`/calendar/${resource.id}`}>Book Now</Link>
                       </Button>
-                    </CardContent>
+                    </div>
                   </Card>
                 ))
               )}

@@ -1,8 +1,10 @@
 import { Marquee } from "@/components/magicui/marquee";
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 import { Calendar, Clock, MapPin, Users, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import  {MarqueeDemo}  from "@/components/magicui/MarqueeDemo";
@@ -15,6 +17,9 @@ import Eight from "@/components/animata/bento-grid/eight";
 import Carousel from "@/components/animata/progress/carousel";
 
 const Landing: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
   const features = [
     {
       icon: Calendar,
@@ -67,6 +72,17 @@ const Landing: React.FC = () => {
       rating: 5
     }
   ];
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">

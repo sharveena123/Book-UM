@@ -23,7 +23,7 @@ interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   resource: Resource;
-  timeSlot: { start: Date; end: Date };
+  timeSlots: { start: Date; end: Date }[];
   onSuccess: () => void;
 }
 
@@ -31,7 +31,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
   isOpen,
   onClose,
   resource,
-  timeSlot,
+  timeSlots,
   onSuccess
 }) => {
   const [notes, setNotes] = useState('');
@@ -81,7 +81,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  const sendBookingEmail = async (action: 'created' | 'cancelled' | 'updated') => {
+  const sendBookingEmail = async (action: 'created' | 'cancelled' | 'updated', slot: { start: Date; end: Date }) => {
     try {
       // Get user profile for full name
       const { data: profile } = await supabase
@@ -97,8 +97,8 @@ const BookingModal: React.FC<BookingModalProps> = ({
           email: user?.email,
           userName,
           resourceName: resource.name,
-          startTime: timeSlot.start.toISOString(),
-          endTime: timeSlot.end.toISOString(),
+          startTime: slot.start.toISOString(),
+          endTime: slot.end.toISOString(),
           location: resource.location,
           bookingId: 'pending', // Will be updated after booking is created
           action
@@ -116,7 +116,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
     setEmailLoading(true);
 
     try {
-      await sendBookingEmail('created');
+      await sendBookingEmail('created', timeSlots[0]);
       setEmailSent(true);
       toast({
         title: "Email sent",
@@ -140,44 +140,40 @@ const BookingModal: React.FC<BookingModalProps> = ({
     setLoading(true);
 
     try {
-      // Check for conflicts
-      const { data: conflicts, error: conflictError } = await supabase
-        .from('bookings')
-        .select('id')
-        .eq('resource_id', resource.id)
-        .eq('status', 'confirmed')
-        .or(`and(start_time.lte.${timeSlot.end.toISOString()},end_time.gt.${timeSlot.start.toISOString()})`);
-
-      if (conflictError) throw conflictError;
-
-      if (conflicts && conflicts.length > 0) {
-        toast({
-          variant: "destructive",
-          title: "Booking conflict",
-          description: "This time slot is no longer available"
-        });
-        return;
+      // Check for conflicts for all slots
+      for (const slot of timeSlots) {
+        const { data: conflicts, error: conflictError } = await supabase
+          .from('bookings')
+          .select('id')
+          .eq('resource_id', resource.id)
+          .eq('status', 'confirmed')
+          .or(`and(start_time.lte.${slot.end.toISOString()},end_time.gt.${slot.start.toISOString()})`);
+        if (conflictError) throw conflictError;
+        if (conflicts && conflicts.length > 0) {
+          toast({
+            variant: "destructive",
+            title: "Booking conflict",
+            description: `One or more selected slots are no longer available.`
+          });
+          setLoading(false);
+          return;
+        }
       }
-
-      // Create booking
-      const { data: booking, error } = await supabase
-        .from('bookings')
-        .insert({
-          user_id: user.id,
-          resource_id: resource.id,
-          start_time: timeSlot.start.toISOString(),
-          end_time: timeSlot.end.toISOString(),
-          notes: notes || null,
-          status: 'confirmed'
-        })
-        .select()
-        .single();
-
+      // Create bookings for all slots
+      const inserts = timeSlots.map(slot => ({
+        user_id: user.id,
+        resource_id: resource.id,
+        start_time: slot.start.toISOString(),
+        end_time: slot.end.toISOString(),
+        notes: notes || null,
+        status: 'confirmed'
+      }));
+      const { error } = await supabase.from('bookings').insert(inserts);
       if (error) throw error;
 
       toast({
         title: "Booking confirmed",
-        description: "Your booking has been successfully created"
+        description: "Your booking(s) have been successfully created"
       });
 
       onSuccess();
@@ -247,10 +243,20 @@ const BookingModal: React.FC<BookingModalProps> = ({
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-2 text-gray-500" />
               <span className="text-sm text-gray-600">
-                {format(timeSlot.start, 'EEEE, MMMM d, yyyy')} from{' '}
-                {format(timeSlot.start, 'h:mm a')} to {format(timeSlot.end, 'h:mm a')}
+                {timeSlots.length === 1
+                  ? `${format(timeSlots[0].start, 'EEEE, MMMM d, yyyy')} from ${format(timeSlots[0].start, 'h:mm a')} to ${format(timeSlots[0].end, 'h:mm a')}`
+                  : `${timeSlots.length} slots selected:`}
               </span>
             </div>
+            {timeSlots.length > 1 && (
+              <ul className="ml-6 list-disc text-sm text-gray-700">
+                {timeSlots.map((slot, idx) => (
+                  <li key={idx}>
+                    {format(slot.start, 'EEEE, MMMM d, yyyy')} from {format(slot.start, 'h:mm a')} to {format(slot.end, 'h:mm a')}
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="flex items-center">
               <User className="h-4 w-4 mr-2 text-gray-500" />
               <span className="text-sm text-gray-600">{user?.email}</span>

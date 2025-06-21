@@ -74,6 +74,10 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				sparkle: {
+					"0%, 100%": { opacity: "0.75", scale: "0.9" },
+					"50%": { opacity: "1", scale: "1" },
+				  },
 				shine: {
 					"0%": {
 					  backgroundPosition: "0% 50%",
@@ -118,6 +122,8 @@ export default {
 				}
 			},
 			animation: {
+				sparkle: "sparkle 2s ease-in-out infinite",
+
 				shine: "shine var(--duration, 14s) linear infinite",
 
 				"pop-blob": "pop-blob 5s infinite",

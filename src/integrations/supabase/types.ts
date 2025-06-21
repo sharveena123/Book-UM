@@ -59,6 +59,42 @@ export type Database = {
           },
         ]
       }
+      favourites: {
+        Row: {
+          id: string
+          user_id: string
+          resource_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          resource_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          resource_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favourites_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favourites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -215,7 +251,7 @@ export type Enums<
     schema: keyof Database
   }
     ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never,
 > = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
   ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
