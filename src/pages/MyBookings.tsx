@@ -65,6 +65,7 @@ const MyBookings: React.FC = () => {
         .from('bookings')
         .select(`*, resources(id, name, type, location)`)
         .eq('user_id', user!.id)
+        .eq('status', 'confirmed')
         .gte('start_time', new Date().toISOString())
         .order('start_time', { ascending: true });
 
@@ -75,7 +76,7 @@ const MyBookings: React.FC = () => {
         .from('bookings')
         .select(`*, resources(id, name, type, location)`)
         .eq('user_id', user!.id)
-        .lt('start_time', new Date().toISOString())
+        .or(`status.eq.cancelled,start_time.lt.${new Date().toISOString()}`)
         .order('start_time', { ascending: false });
 
       if (pastError) throw pastError;
