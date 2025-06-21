@@ -16,7 +16,7 @@ import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-b
 import Eight from "@/components/animata/bento-grid/eight";
 import Carousel from "@/components/animata/progress/carousel";
 import  {TextReveal}  from "@/components/animata/text/textreveal";
-
+import { BlurFade } from "@/components/animata/progress/blur-fade";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -44,6 +44,25 @@ const Landing: React.FC = () => {
       description: "Book for individuals or groups with capacity management"
     }
   ];
+  
+const imagePaths = [
+  "/images/img1.png",
+  "/images/img3.png",
+  "/images/img4.png",
+  "/images/img5.png",
+  "/images/img6.png",
+  "/images/img7.png",
+  "/images/img8.png",
+  "/images/img9.png",
+  "/images/img10.png",
+];
+  
+// const images = Array.from({ length: 9 }, (_, i) => {
+//   const isLandscape = i % 2 === 0;
+//   const width = isLandscape ? 800 : 600;
+//   const height = isLandscape ? 600 : 800;
+//   return `https://picsum.photos/seed/${i + 1}/${width}/${height}`;
+// });
 
   const facilities = [
     { name: "Study Pods", icon: "📚", description: "Quiet private spaces for focused study" },
@@ -203,29 +222,28 @@ firstBlobClassName="top-10 left-0"
         From focused study sessions and collaborative meetings to lively sports and vibrant campus events — your perfect space is only a few taps away with seamless booking, instant confirmations, and zero hassle        </TextReveal>
       </div>
     </section>
-      {/* Facilities Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Available Facilities</h2>
-            <p className="text-gray-600">Book from a wide range of campus resources</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {facilities.map((facility, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <div className="text-4xl mb-3">{facility.icon}</div>
-                    <h3 className="font-semibold text-lg mb-2">{facility.name}</h3>
-                    <p className="text-gray-600 text-sm">{facility.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
+
+    <section id="photos">
+    <BlurFade delay={0.25 * 2} inView className="text-center px-20 py-10">
+            <h2 className="text-5xl font-bold tracking-tighter text-gray-900 mb-4">Available Facilities</h2>
+            <p className="text-gray-600 tracking-tighter">Book from a wide range of campus resources</p>
+          </BlurFade>
+      <div className="columns-2 gap-4 sm:columns-3 px-40">
+        {imagePaths.map((src, idx) => (
+          <BlurFade key={src} delay={0.25 + idx * 0.05} inView>
+            
+            <img
+              className="mb-4 size-full rounded-lg object-cover"
+              src={src}
+              alt={`Gallery image ${idx + 1}`}
+            />
+          </BlurFade>
+        ))}
+      </div>
+    </section>
+
+{/* 
  
       {/* reviews */}
       <section className="my-12">
@@ -235,27 +253,26 @@ firstBlobClassName="top-10 left-0"
 
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary text-white">
+      <section className="py-16 bg-[#eff4ff] text-[#110d2c]">
+        
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-xl mb-8 opacity-90">
             Join the thousands of users who trust Book@UM for their resource booking needs
           </p>
           <div className="space-x-4">
-            <Button size="lg" variant="secondary" asChild>
+            <InteractiveHoverButton >
               <Link to="/register">
-                Create Account <ArrowRight className="ml-2 h-4 w-4" />
+                Create Account  
               </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-primary" asChild>
-              <Link to="/login">Sign In</Link>
-            </Button>
+            </InteractiveHoverButton>
+  
           </div>
         </div>
       </section>
-
+{/* 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
@@ -298,8 +315,8 @@ firstBlobClassName="top-10 left-0"
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
             <p style={{margin: 0, color: '#666'}}>&copy; 2024 Book@UM. All rights reserved.</p>
           </div>
-        </div>
-      </footer>
+        </div> */}
+      {/* </footer> */} 
     </div>
   );
 };

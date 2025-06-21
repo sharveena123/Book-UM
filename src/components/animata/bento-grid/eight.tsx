@@ -154,7 +154,7 @@ function FeatureSix() {
         ]}
         height={100}
       />
-      <div className="mt-4 text-center font-bold text-[#183B4E]">Weekly review</div>
+      <div className="mt-4 text-center font-bold text-[#183B4E]">Usage Analytics</div>
       <div className="mt-2 text-center font-mono text-[#27548A]">Track and manage your bookings with detailed reports</div>
     </BentoCard>
   );
