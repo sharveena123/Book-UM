@@ -15,6 +15,7 @@ import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Resources from '@/pages/Resources';
+import Footer from '@/components/Footer';
 
 function App() {
   return (
@@ -70,7 +71,7 @@ function App() {
           
           {/* Bookie AI Chatbot - Available on all pages */}
           <BookieChatbot />
-          
+          <Footer />
           <Toaster />
         </div>
       </Router>

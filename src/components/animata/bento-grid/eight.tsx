@@ -65,13 +65,13 @@ function BentoCard({ children, className }: { children: React.ReactNode; classNa
 
 function FeatureOne() {
   return (
-    <BentoCard className="flex flex-col bg-yellow-300">
-      <div className="font-bold text-yellow-700">Highly rated</div>
+    <BentoCard className="flex flex-col border border-[#27548A] bg-[#fef6e8]">
+      <div className="font-bold text-[#183B4E]">Highly rated</div>
       <div className="mt-auto flex justify-end">
-        <div className="text-4xl font-black text-black/60 md:text-7xl">
+        <div className="text-4xl font-black text-[#000000]/50 md:text-7xl">
           <Ticker value="4.8" />
         </div>{" "}
-        <sup className="text-xl text-yellow-700">★</sup>
+        <sup className="text-xl text-[#183B4E]">★</sup>
       </div>
     </BentoCard>
   );
@@ -79,8 +79,8 @@ function FeatureOne() {
 
 function FeatureTwo() {
   return (
-    <BentoCard className="relative flex flex-col overflow-visible bg-violet-500 sm:col-span-2">
-      <strong className="text-2xl font-semibold text-white">
+    <BentoCard className="relative flex flex-col overflow-visible bg-[#deedff] sm:col-span-2">
+      <strong className="text-2xl font-semibold text-[#183B4E]">
         <Counter targetValue={179} format={(v) => +Math.ceil(v) + "k+ users"} />
       </strong>
       <div className="ml-4 mt-auto">
@@ -92,13 +92,13 @@ function FeatureTwo() {
 
 function FeatureThree() {
   return (
-    <BentoCard className="flex flex-col bg-orange-300">
-      <Bot className="size-8 md:size-12" />
-      <strong className="mt-1 inline-block text-sm">Integrated AI</strong>
+    <BentoCard className="flex flex-col bg-white border border-[#27548A]">
+      <Bot className="size-8 md:size-12 text-[#27548A]" />
+      <strong className="mt-1 inline-block text-sm text-[#183B4E]">Integrated AI</strong>
 
       <div className="mt-auto">
-        <div className="text-sm font-medium">What are the available services?</div>
-        <div className="font-semibold">
+        <div className="text-sm font-medium text-[#183B4E]">What are the available services?</div>
+        <div className="font-semibold text-[#27548A]">
           <TypingText text="Labs, Conference Rooms, Meeting Rooms, etc." waitTime={2000} alwaysVisibleCount={0} />
         </div>
       </div>
@@ -108,18 +108,18 @@ function FeatureThree() {
 
 function FeatureFour() {
     return (
-      <BentoCard className="relative flex flex-col justify-center bg-lime-300 sm:col-span-2">
+      <BentoCard className="relative flex flex-col justify-center bg-[#F3F3F3] sm:col-span-2">
         <Terminal className="w-full h-[200px] max-w-full">
         <TypingAnimation
             delay={0}
             duration={60}
-            className="text-2xl font-semibold text-green-800"
+            className="text-2xl font-semibold text-[#183B4E]"
           >
             Book Instantly
           </TypingAnimation>
-          <AnimatedSpan className="text-lg" delay={100}>1. Tap </AnimatedSpan>
-          <AnimatedSpan className="text-lg" delay={300}>2. Book</AnimatedSpan>
-          <AnimatedSpan className="text-lg" delay={600}>3. Go</AnimatedSpan>
+          <AnimatedSpan className="text-lg text-[#27548A]" delay={100}>1. Tap </AnimatedSpan>
+          <AnimatedSpan className="text-lg text-[#27548A]" delay={300}>2. Book</AnimatedSpan>
+          <AnimatedSpan className="text-lg text-[#27548A]" delay={600}>3. Go</AnimatedSpan>
 
         </Terminal>
       </BentoCard>
@@ -128,80 +128,80 @@ function FeatureFour() {
   
 function FeatureFive() {
   return (
-    <BentoCard className="flex flex-col items-center justify-center bg-zinc-300 sm:col-span-2">
-      <BoldCopy text="SCHEDULE" className="bg-transparent" textClassName="text-zinc-800" />
+    <BentoCard className="flex flex-col border border-[#27548A] items-center justify-center bg-[#fefaf3] sm:col-span-2">
+      <BoldCopy text="SCHEDULE" backgroundTextClassName="text-gray-300" className="bg-transparent" textClassName="text-[#183B4E]" />
     </BentoCard>
   );
 }
 
 function FeatureSix() {
   return (
-    <BentoCard className="bg-green-200">
+    <BentoCard className="bg-white border border-[#27548A]">
       <BarChart
         items={[
           {
             progress: 30,
             label: "Jan",
-            className: "rounded-xl bg-green-400",
+            className: "rounded-xl bg-[#DDA853]",
           },
-          { progress: 70, label: "S", className: "rounded-xl bg-green-400" },
-          { progress: 60, label: "M", className: "rounded-xl bg-green-400" },
-          { progress: 90, label: "T", className: "rounded-xl bg-green-400" },
-          { progress: 10, label: "W", className: "rounded-xl bg-green-400" },
-          { progress: 20, label: "Th", className: "rounded-xl bg-green-400" },
-          { progress: 30, label: "F", className: "rounded-xl bg-green-400" },
-          { progress: 90, label: "Sa", className: "rounded-xl bg-green-400" },
+          { progress: 70, label: "S", className: "rounded-xl bg-[#27548A]" },
+          { progress: 60, label: "M", className: "rounded-xl bg-[#DDA853]" },
+          { progress: 90, label: "T", className: "rounded-xl bg-[#27548A]" },
+          { progress: 10, label: "W", className: "rounded-xl bg-[#DDA853]" },
+          { progress: 20, label: "Th", className: "rounded-xl bg-[#27548A]" },
+          { progress: 30, label: "F", className: "rounded-xl bg-[#DDA853]" },
+          { progress: 90, label: "Sa", className: "rounded-xl bg-[#27548A]" },
         ]}
         height={100}
       />
-      <div className="mt-4 text-center font-bold">Weekly review</div>
-      <div className="mt-2 text-center font-mono">Track and manage your bookings with detailed reports</div>
+      <div className="mt-4 text-center font-bold text-[#183B4E]">Weekly review</div>
+      <div className="mt-2 text-center font-mono text-[#27548A]">Track and manage your bookings with detailed reports</div>
     </BentoCard>
   );
 }
 
 function FeatureSeven() {
   return (
-    <BentoCard className="flex flex-col gap-2 items-center bg-rose-300 sm:col-span-1">
+    <BentoCard className="flex flex-col gap-2 items-center bg-[#fff8ed] sm:col-span-1">
      <CalendarEvent 
   dates={[
     {
-      barColor: 'bg-purple-700',
-      bgcolor: 'bg-purple-200',
-      color: 'text-purple-900',
-      dateColor: 'text-purple-600',
+      barColor: 'bg-[#27548A]',
+      bgcolor: 'bg-blue-100',
+      color: 'text-blue-900',
+      dateColor: 'text-blue-600',
       time: '10:30 - 11:30',
       title: 'Meeting Room 1'
     },
     {
-      barColor: 'bg-cyan-700',
-      bgcolor: 'bg-cyan-200',
-      color: 'text-cyan-900',
-      dateColor: 'text-cyan-600',
+      barColor: 'bg-[#DDA853]',
+      bgcolor: 'bg-yellow-100',
+      color: 'text-yellow-900',
+      dateColor: 'text-yellow-600',
       time: '12:00 - 12:45',
       title: 'Lab 3'
     },
     {
-      barColor: 'bg-green-700',
-      bgcolor: 'bg-green-200',
-      color: 'text-green-900',
-      dateColor: 'text-green-600',
+      barColor: 'bg-[#27548A]',
+      bgcolor: 'bg-blue-100',
+      color: 'text-blue-900',
+      dateColor: 'text-blue-600',
       time: '14:00 - 15:00',
       title: 'Design Meeting'
     },
     {
-      barColor: 'bg-yellow-700',
-      bgcolor: 'bg-yellow-200',
+      barColor: 'bg-[#DDA853]',
+      bgcolor: 'bg-yellow-100',
       color: 'text-yellow-900',
       dateColor: 'text-yellow-600',
       time: '16:00 - 17:00',
       title: 'Development'
     },
     {
-      barColor: 'bg-red-700',
-      bgcolor: 'bg-red-200',
-      color: 'text-red-900',
-      dateColor: 'text-red-600',
+      barColor: 'bg-[#183B4E]',
+      bgcolor: 'bg-gray-200',
+      color: 'text-gray-900',
+      dateColor: 'text-gray-600',
       time: '18:00 - 19:00',
       title: 'QA Testing'
     }
@@ -214,11 +214,11 @@ function FeatureSeven() {
 
 function FeatureEight() {
   return (
-    <BentoCard className="relative flex flex-col bg-blue-200 sm:col-span-2">
+    <BentoCard className="relative flex flex-col border border-[#27548A] bg-[#e8eeff] sm:col-span-2">
 <WideCard />
       <div className="mt-4">
-        <div className="text-3xl font-black text-gray-800">Confirmation Emails</div>
-        <p className="text-lg">Stay in the loop with real-time confirmation emails sent straight to your inbox the moment you make a booking. Get all your details, dates, and payment info securely — no guesswork, no delays.</p>
+        <div className="text-3xl font-black text-[#183B4E]">Confirmation Emails</div>
+        <p className="text-lg text-[#27548A]">Stay in the loop with real-time confirmation emails sent straight to your inbox the moment you make a booking. Get all your details, dates, and payment info securely — no guesswork, no delays.</p>
       </div>    </BentoCard>
   );
 }

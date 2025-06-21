@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Clock, MapPin, User, Mail, CheckCircle, Navigation } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Navigation, CheckCircle, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { sendBookingEmail } from '@/lib/email';
 
 interface Resource {
   id: string;
@@ -36,8 +36,8 @@ const BookingModal: React.FC<BookingModalProps> = ({
 }) => {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -81,42 +81,23 @@ const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  const sendBookingEmail = async (action: 'created' | 'cancelled' | 'updated', slot: { start: Date; end: Date }) => {
-    try {
-      // Get user profile for full name
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('id', user?.id)
-        .single();
-
-      const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
-
-      await supabase.functions.invoke('send-booking-confirmation', {
-        body: {
-          email: user?.email,
-          userName,
-          resourceName: resource.name,
-          startTime: slot.start.toISOString(),
-          endTime: slot.end.toISOString(),
-          location: resource.location,
-          bookingId: 'pending', // Will be updated after booking is created
-          action
-        }
-      });
-    } catch (error) {
-      console.error('Error sending booking email:', error);
-      throw error; // Re-throw to handle in the calling function
-    }
-  };
-
   const handleSendEmail = async () => {
     if (!user) return;
 
     setEmailLoading(true);
 
     try {
-      await sendBookingEmail('created', timeSlots[0]);
+      await sendBookingEmail({
+        email: user.email!,
+        userName: user.user_metadata?.full_name || user.email!,
+        resourceName: resource.name,
+        startTime: timeSlots[0].start.toISOString(),
+        endTime: timeSlots[0].end.toISOString(),
+        location: resource.location,
+        bookingId: 'pending', // Will be updated after booking is created
+        action: 'created',
+      });
+
       setEmailSent(true);
       toast({
         title: "Email sent",
@@ -140,25 +121,6 @@ const BookingModal: React.FC<BookingModalProps> = ({
     setLoading(true);
 
     try {
-      // Check for conflicts for all slots
-      for (const slot of timeSlots) {
-        const { data: conflicts, error: conflictError } = await supabase
-          .from('bookings')
-          .select('id')
-          .eq('resource_id', resource.id)
-          .eq('status', 'confirmed')
-          .or(`and(start_time.lte.${slot.end.toISOString()},end_time.gt.${slot.start.toISOString()})`);
-        if (conflictError) throw conflictError;
-        if (conflicts && conflicts.length > 0) {
-          toast({
-            variant: "destructive",
-            title: "Booking conflict",
-            description: `One or more selected slots are no longer available.`
-          });
-          setLoading(false);
-          return;
-        }
-      }
       // Create bookings for all slots
       const inserts = timeSlots.map(slot => ({
         user_id: user.id,
@@ -168,8 +130,23 @@ const BookingModal: React.FC<BookingModalProps> = ({
         notes: notes || null,
         status: 'confirmed'
       }));
-      const { error } = await supabase.from('bookings').insert(inserts);
-      if (error) throw error;
+
+      const { data: newBookings, error } = await supabase.from('bookings').insert(inserts).select();
+      
+      if (error) {
+          // Check for conflicts
+          if (error.code === '23505') { // unique constraint violation
+            toast({
+              variant: "destructive",
+              title: "Booking conflict",
+              description: `One or more selected slots are no longer available.`
+            });
+          } else {
+            throw error;
+          }
+          setLoading(false);
+          return;
+      }
 
       toast({
         title: "Booking confirmed",
@@ -197,7 +174,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] bg-white">
+      <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle>
             {emailSent ? 'Confirm Booking' : 'Review Booking Details'}
@@ -211,15 +188,15 @@ const BookingModal: React.FC<BookingModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+          <div className="bg-gray-50 p-3 rounded-lg space-y-3">
             <div className="flex items-center">
               <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-              <span className="font-medium">{resource.name}</span>
+              <span className="font-medium text-sm">{resource.name}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                <span className="text-sm text-gray-600">{resource.location}</span>
+                <span className="text-xs text-gray-600">{resource.location}</span>
               </div>
               <div className="flex space-x-2">
                 <Button
@@ -242,14 +219,14 @@ const BookingModal: React.FC<BookingModalProps> = ({
             </div>
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-2 text-gray-500" />
-              <span className="text-sm text-gray-600">
+              <span className="text-xs text-gray-600">
                 {timeSlots.length === 1
                   ? `${format(timeSlots[0].start, 'EEEE, MMMM d, yyyy')} from ${format(timeSlots[0].start, 'h:mm a')} to ${format(timeSlots[0].end, 'h:mm a')}`
                   : `${timeSlots.length} slots selected:`}
               </span>
             </div>
             {timeSlots.length > 1 && (
-              <ul className="ml-6 list-disc text-sm text-gray-700">
+              <ul className="ml-6 list-disc text-xs text-gray-700">
                 {timeSlots.map((slot, idx) => (
                   <li key={idx}>
                     {format(slot.start, 'EEEE, MMMM d, yyyy')} from {format(slot.start, 'h:mm a')} to {format(slot.end, 'h:mm a')}
@@ -259,7 +236,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
             )}
             <div className="flex items-center">
               <User className="h-4 w-4 mr-2 text-gray-500" />
-              <span className="text-sm text-gray-600">{user?.email}</span>
+              <span className="text-xs text-gray-600">{user?.email}</span>
             </div>
           </div>
 
@@ -273,25 +250,26 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 placeholder="Add any special requirements or notes..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                rows={3}
+                rows={2}
+                className="text-sm"
               />
             </div>
           )}
 
           {emailSent && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                <span className="text-sm text-green-800">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                <span className="text-xs text-green-800">
                   Confirmation email sent to {user?.email}
                 </span>
               </div>
             </div>
           )}
 
-          <div className="flex justify-end space-x-3">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Cancel
+          <div className="flex justify-end space-x-3 pt-2">
+            <Button type="button" variant="outline" size="sm" onClick={handleClose}>
+              {emailSent ? 'Back' : 'Cancel'}
             </Button>
             
             {!emailSent ? (
@@ -299,16 +277,17 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 type="button" 
                 onClick={handleSendEmail}
                 disabled={emailLoading}
+                size="sm"
               >
                 {emailLoading ? (
                   <>
                     <Mail className="h-4 w-4 mr-2 animate-pulse" />
-                    Sending Email...
+                    Sending...
                   </>
                 ) : (
                   <>
                     <Mail className="h-4 w-4 mr-2" />
-                    Send Confirmation Email
+                    Send Email
                   </>
                 )}
               </Button>
@@ -317,6 +296,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 type="button" 
                 onClick={handleConfirmBooking}
                 disabled={loading}
+                size="sm"
               >
                 {loading ? 'Creating...' : 'Confirm Booking'}
               </Button>

@@ -14,6 +14,7 @@ import EditBookingModal from '@/components/EditBookingModal';
 import LocationPreview from '@/components/LocationPreview';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { sendBookingEmail } from '@/lib/email';
 
 interface Booking {
   id: string;
@@ -40,9 +41,9 @@ const MyBookings: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancellingBooking, setCancellingBooking] = useState<Booking | null>(null);
-  const [emailSent, setEmailSent] = useState(false);
-  const [emailLoading, setEmailLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -143,52 +144,32 @@ const MyBookings: React.FC = () => {
     }
   };
 
-  const sendCancellationEmail = async (booking: Booking) => {
-    try {
-      // Get user profile for full name
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('id', user?.id)
-        .single();
-
-      const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
-
-      await supabase.functions.invoke('send-booking-confirmation', {
-        body: {
-          email: user?.email,
-          userName,
-          resourceName: booking.resources.name,
-          startTime: booking.start_time,
-          endTime: booking.end_time,
-          location: booking.resources.location,
-          bookingId: booking.id,
-          action: 'cancelled'
-        }
-      });
-    } catch (error) {
-      console.error('Error sending cancellation email:', error);
-      throw error; // Re-throw to handle in the calling function
-    }
-  };
-
   const handleSendCancellationEmail = async () => {
-    if (!cancellingBooking) return;
+    if (!cancellingBooking || !user) return;
 
     setEmailLoading(true);
-
     try {
-      await sendCancellationEmail(cancellingBooking);
+      await sendBookingEmail({
+        email: user.email!,
+        userName: user.user_metadata?.full_name || user.email!,
+        resourceName: cancellingBooking.resources.name,
+        startTime: cancellingBooking.start_time,
+        endTime: cancellingBooking.end_time,
+        location: cancellingBooking.resources.location,
+        bookingId: cancellingBooking.id,
+        action: 'cancelled',
+      });
+
       setEmailSent(true);
       toast({
-        title: "Email sent",
-        description: "A cancellation confirmation email has been sent to your email address"
+        title: "Email Sent",
+        description: "Cancellation confirmation email has been sent to your email address."
       });
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error('Email error:', error);
       toast({
         variant: "destructive",
-        title: "Email failed",
+        title: "Email Failed",
         description: "Failed to send cancellation email. Please try again."
       });
     } finally {
@@ -197,7 +178,7 @@ const MyBookings: React.FC = () => {
   };
 
   const handleConfirmCancellation = async () => {
-    if (!cancellingBooking) return;
+    if (!cancellingBooking || !user) return;
 
     setCancelLoading(true);
 
@@ -208,7 +189,7 @@ const MyBookings: React.FC = () => {
         .eq('id', cancellingBooking.id);
 
       if (error) throw error;
-
+      
       await fetchBookings();
       toast({
         title: "Booking cancelled",
@@ -477,7 +458,7 @@ const MyBookings: React.FC = () => {
 
           {/* Cancellation Confirmation Modal */}
           <Dialog open={showCancelModal} onOpenChange={handleCloseCancelModal}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto bg-white">
               <DialogHeader>
                 <DialogTitle>
                   {emailSent ? 'Confirm Cancellation' : 'Cancel Booking'}
@@ -490,77 +471,73 @@ const MyBookings: React.FC = () => {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4">
-                {cancellingBooking && (
-                  <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+              {cancellingBooking && (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-3 rounded-lg space-y-2">
                     <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="font-semibold">{cancellingBooking.resources.name}</span>
+                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="font-medium text-sm">{cancellingBooking.resources.name}</span>
                     </div>
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-sm text-gray-600">{cancellingBooking.resources.location}</span>
+                      <span className="text-xs text-gray-600">{cancellingBooking.resources.location}</span>
                     </div>
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-xs text-gray-600">
                         {format(new Date(cancellingBooking.start_time), 'EEEE, MMMM d, yyyy')} from{' '}
                         {format(new Date(cancellingBooking.start_time), 'h:mm a')} to {format(new Date(cancellingBooking.end_time), 'h:mm a')}
                       </span>
                     </div>
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-sm text-gray-600">{user?.email}</span>
-                    </div>
                   </div>
-                )}
 
-                {emailSent && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                      <span className="text-sm text-green-800">
-                        Cancellation email sent to {user?.email}
-                      </span>
+                  {emailSent && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                        <span className="text-xs text-green-800">
+                          Cancellation email sent to {user?.email}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                <div className="flex justify-end space-x-3">
-                  <Button type="button" variant="outline" onClick={handleCloseCancelModal}>
-                    Cancel
-                  </Button>
-                  
-                  {!emailSent ? (
-                    <Button 
-                      type="button" 
-                      onClick={handleSendCancellationEmail}
-                      disabled={emailLoading}
-                    >
-                      {emailLoading ? (
-                        <>
-                          <Mail className="h-4 w-4 mr-2 animate-pulse" />
-                          Sending Email...
-                        </>
-                      ) : (
-                        <>
-                          <Mail className="h-4 w-4 mr-2" />
-                          Send Cancellation Email
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button 
-                      type="button" 
-                      variant="destructive"
-                      onClick={handleConfirmCancellation}
-                      disabled={cancelLoading}
-                    >
-                      {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
-                    </Button>
                   )}
+
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <Button variant="outline" size="sm" onClick={handleCloseCancelModal} disabled={cancelLoading}>
+                      {emailSent ? 'Back' : 'Cancel'}
+                    </Button>
+                    
+                    {!emailSent ? (
+                      <Button 
+                        onClick={handleSendCancellationEmail}
+                        disabled={emailLoading}
+                        size="sm"
+                      >
+                        {emailLoading ? (
+                          <>
+                            <Mail className="h-4 w-4 mr-2 animate-pulse" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="h-4 w-4 mr-2" />
+                            Send Email
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="destructive"
+                        onClick={handleConfirmCancellation}
+                        disabled={cancelLoading}
+                        size="sm"
+                      >
+                        {cancelLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>

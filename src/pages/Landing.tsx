@@ -85,7 +85,7 @@ const Landing: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -110,7 +110,7 @@ const Landing: React.FC = () => {
       {/* 🌀 Animated Gradient Background */}
       <BlurryBlob
   className="absolute z-0 pointer-events-none"
-  firstBlobColor="bg-purple-300"
+  firstBlobColor="bg-yellow-300"
   secondBlobColor="bg-blue-300"
 firstBlobClassName="top-10 left-0"
   secondBlobClassName="top-40 right-10"
@@ -126,7 +126,7 @@ firstBlobClassName="top-10 left-0"
                 <span>Book </span>
                 <RotatingText
                   texts={["rooms", "facilities", "labs", "pods"]}
-                  mainClassName="inline-flex px-3 bg-purple-300 text-black overflow-hidden py-1 items-center rounded-lg transition-all duration-300"
+                  mainClassName="inline-flex px-3 bg-[#DDA853] text-white overflow-hidden py-1 items-center rounded-lg transition-all duration-300"
                   staggerFrom="last"
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
@@ -166,11 +166,11 @@ firstBlobClassName="top-10 left-0"
       </div>
       
     </section>
-    <section className="py-16 px-10 bg-blue-80">
+    <section className="py-16 px-10 bg-white">
       <Eight />
     </section>
 
-    <section className="py-16 px-10 bg-blue-80">
+    <section className="py-16 px-10 bg-white">
   <div className="text-center mb-12">
     <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Book@UM?</h2>
     <p className="text-gray-600 max-w-2xl mx-auto">

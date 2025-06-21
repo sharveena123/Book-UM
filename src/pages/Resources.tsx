@@ -18,6 +18,7 @@ interface Resource {
   description?: string;
   tags?: string[];
   capacity?: number;
+  image_url?: string;
 }
 
 const Resources: React.FC = () => {
@@ -170,32 +171,19 @@ const Resources: React.FC = () => {
                 filteredResources.map(resource => (
                   <Card key={resource.id} className="h-full hover:shadow-lg transition-shadow flex flex-col bg-white border-[#27548A]">
                     {/* Image Section */}
-                    <div className="relative h-48 bg-gradient-to-br from-[#27548A] to-[#183B4E] rounded-t-lg overflow-hidden">
+                    <div className="relative h-48 rounded-t-lg overflow-hidden">
+                      <img
+                        src={resource.image_url || '/placeholder.svg'}
+                        alt={resource.name}
+                        className="w-full h-full object-cover"
+                      />
                       <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-white text-center">
-                          <div className="text-4xl mb-2">
-                            {resource.type === 'room' && '🏢'}
-                            {resource.type === 'equipment' && '🔧'}
-                            {resource.type === 'vehicle' && '🚗'}
-                            {resource.type === 'facility' && '🏟️'}
-                            {resource.type === 'lab' && '🧪'}
-                            {resource.type === 'studio' && '🎨'}
-                            {resource.type === 'auditorium' && '🎭'}
-                            {resource.type === 'gym' && '💪'}
-                            {resource.type === 'library' && '📚'}
-                            {resource.type === 'cafeteria' && '🍽️'}
-                            {!['room', 'equipment', 'vehicle', 'facility', 'lab', 'studio', 'auditorium', 'gym', 'library', 'cafeteria'].includes(resource.type) && '🏛️'}
-                          </div>
-                          <div className="text-lg font-semibold">{resource.name}</div>
-                        </div>
-                      </div>
                       <button
                         aria-label={favourites.includes(resource.id) ? 'Remove from favourites' : 'Add to favourites'}
                         onClick={() => toggleFavourite(resource.id)}
                         className="absolute top-3 right-3 z-10"
                       >
-                        <Heart className={`h-6 w-6 transition-colors ${favourites.includes(resource.id) ? 'fill-[#DDA853] text-[#DDA853]' : 'text-white hover:text-[#DDA853]'}`} />
+                        <Heart className={`h-6 w-6 transition-colors ${favourites.includes(resource.id) ? 'fill-[#dd5353] text-[#DDA853]' : 'text-white hover:text-[#DDA853]'}`} />
                       </button>
                     </div>
                     

@@ -443,7 +443,7 @@ const Dashboard: React.FC = () => {
         );
     }
 
-    const COLORS = ['#27548A', '#DDA853', '#183B4E', '#FFFFFF', '#8B5A2B'];
+    const COLORS = ['#27548A', '#DDA853', '#183B4E', '#edd7bf', '#8B5A2B'];
 
     return (
         <>
@@ -662,7 +662,7 @@ const Dashboard: React.FC = () => {
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {suggestionList.map(({ type, resource, bookingDetails }) => (
                                     <Link key={`${type}-${resource.id}`} to={`/calendar/${resource.id}`}>
-                                        <div className="p-4 border border-[#27548A] rounded-lg hover:bg-white relative">
+                                        <div className="p-4 border border-[#27548A] rounded-lg hover:bg-white relative hover:shadow-lg transition-shadow duration-200">
                                             <Badge variant="secondary" className="absolute top-2 right-2 bg-[#DDA853] text-[#183B4E]">{type === 'rebook' ? 'Rebook' : 'Suggestion'}</Badge>
                                             <p className="font-semibold pr-16 text-[#183B4E]">{resource.name}</p>
                                             <p className="text-sm text-[#27548A]">{resource.location}</p>
@@ -689,7 +689,9 @@ const Dashboard: React.FC = () => {
                                                 <p className="text-sm text-[#27548A]">{format(new Date(booking.start_time), 'PPp')}</p>
                                             </div>
                                         ))}
-                                        <Link to="/my-bookings" className="text-sm text-[#27548A] hover:underline">View all</Link>
+                                        <div className="text-right">
+                                            <Link to="/my-bookings" className="text-sm text-blue-600 underline hover:text-blue-800">View all</Link>
+                                        </div>
                                     </div>
                                 ) : (
                                     <p className="text-sm text-[#27548A]">No upcoming bookings.</p>
@@ -701,8 +703,8 @@ const Dashboard: React.FC = () => {
                     {/* Analytics */}
                     <Card className="bg-white border-[#27548A]">
                         <CardHeader>
-                            <CardTitle className="text-[#183B4E]">Analytics</CardTitle>
-                            <CardDescription className="text-[#27548A]">Resources in demand</CardDescription>
+                            <CardTitle className="text-[#183B4E]">Most booked resources</CardTitle>
+                            {/* <CardDescription className="text-[#27548A]">Resources in demand</CardDescription> */}
                         </CardHeader>
                         <CardContent style={{ width: '100%', height: 300 }}>
                             <ResponsiveContainer>
