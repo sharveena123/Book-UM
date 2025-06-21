@@ -13,6 +13,7 @@
     "setup:email": "node setup-email.js"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@hookform/resolvers": "^3.9.0",
     "@lottiefiles/dotlottie-react": "^0.14.1",
     "@radix-ui/react-accordion": "^1.2.0",
