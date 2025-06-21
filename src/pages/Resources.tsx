@@ -122,8 +122,8 @@ const Resources: React.FC = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center pt-16">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="min-h-screen flex items-center justify-center pt-16 bg-white">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#27548A]"></div>
         </div>
       </>
     );
@@ -132,17 +132,17 @@ const Resources: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 pt-16">
+      <div className="min-h-screen bg-white pt-16">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-12">
-          <section className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+          <section className="bg-white rounded-lg shadow p-6 border border-[#27548A]">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-[#183B4E]">
               <span>Resources</span>
             </h2>
             <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
               <div>
-                <label className="block font-medium mb-1">Category</label>
+                <label className="block font-medium mb-1 text-[#183B4E]">Category</label>
                 <select
-                  className="border rounded px-3 py-2 min-w-[180px]"
+                  className="border border-[#27548A] rounded px-3 py-2 min-w-[180px] text-[#183B4E]"
                   value={selectedType}
                   onChange={e => setSelectedType(e.target.value)}
                 >
@@ -153,24 +153,24 @@ const Resources: React.FC = () => {
                 </select>
               </div>
               <div className="flex-1 w-full">
-                <label className="block font-medium mb-1">Search</label>
+                <label className="block font-medium mb-1 text-[#183B4E]">Search</label>
                 <Input
                   type="text"
                   placeholder="Search resources..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full"
+                  className="w-full border-[#27548A] text-[#183B4E]"
                 />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredResources.length === 0 ? (
-                <div className="col-span-full text-center text-gray-500">No resources found.</div>
+                <div className="col-span-full text-center text-[#27548A]">No resources found.</div>
               ) : (
                 filteredResources.map(resource => (
-                  <Card key={resource.id} className="h-full hover:shadow-lg transition-shadow flex flex-col">
+                  <Card key={resource.id} className="h-full hover:shadow-lg transition-shadow flex flex-col bg-white border-[#27548A]">
                     {/* Image Section */}
-                    <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg overflow-hidden">
+                    <div className="relative h-48 bg-gradient-to-br from-[#27548A] to-[#183B4E] rounded-t-lg overflow-hidden">
                       <div className="absolute inset-0 bg-black bg-opacity-20"></div>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-white text-center">
@@ -195,26 +195,26 @@ const Resources: React.FC = () => {
                         onClick={() => toggleFavourite(resource.id)}
                         className="absolute top-3 right-3 z-10"
                       >
-                        <Heart className={`h-6 w-6 transition-colors ${favourites.includes(resource.id) ? 'fill-red-500 text-red-500' : 'text-white hover:text-red-500'}`} />
+                        <Heart className={`h-6 w-6 transition-colors ${favourites.includes(resource.id) ? 'fill-[#DDA853] text-[#DDA853]' : 'text-white hover:text-[#DDA853]'}`} />
                       </button>
                     </div>
                     
                     {/* Information Section */}
                     <div className="flex-1 p-6 flex flex-col">
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold mb-2">{resource.name}</h3>
-                        <p className="text-gray-600 mb-4 line-clamp-2">{resource.description}</p>
+                        <h3 className="text-xl font-semibold mb-2 text-[#183B4E]">{resource.name}</h3>
+                        <p className="text-[#27548A] mb-4 line-clamp-2">{resource.description}</p>
                         
                         <div className="space-y-2 mb-4">
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary">{resource.type}</Badge>
+                            <Badge variant="secondary" className="bg-[#DDA853] text-[#183B4E]">{resource.type}</Badge>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <div className="flex items-center gap-2 text-sm text-[#27548A]">
                             <MapPin className="h-4 w-4" />
                             <span>{resource.location}</span>
                           </div>
                           {resource.capacity && (
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <div className="flex items-center gap-2 text-sm text-[#27548A]">
                               <Users className="h-4 w-4" />
                               <span>Capacity: {resource.capacity}</span>
                             </div>
@@ -224,16 +224,16 @@ const Resources: React.FC = () => {
                         {resource.tags && resource.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-4">
                             {resource.tags.slice(0, 3).map(tag => (
-                              <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                              <Badge key={tag} variant="outline" className="text-xs border-[#27548A] text-[#27548A]">{tag}</Badge>
                             ))}
                             {resource.tags.length > 3 && (
-                              <Badge variant="outline" className="text-xs">+{resource.tags.length - 3} more</Badge>
+                              <Badge variant="outline" className="text-xs border-[#27548A] text-[#27548A]">+{resource.tags.length - 3} more</Badge>
                             )}
                           </div>
                         )}
                       </div>
                       
-                      <Button asChild className="w-full mt-auto">
+                      <Button asChild className="w-full mt-auto bg-[#27548A] hover:bg-[#183B4E] text-white">
                         <Link to={`/calendar/${resource.id}`}>Book Now</Link>
                       </Button>
                     </div>

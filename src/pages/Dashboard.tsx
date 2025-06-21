@@ -129,7 +129,13 @@ const Dashboard: React.FC = () => {
             
             // Process suggestions
             const completed = completedBookings.data || [];
-            const rebookItems: SuggestionItem[] = completed.map((booking: Booking) => ({
+            
+            // This ensures we only get the most recent booking for each resource
+            const uniqueBookings = Array.from(new Map(completed.map(b => [b.resources?.id, b])).values());
+
+            const rebookItems: SuggestionItem[] = uniqueBookings
+              .filter(booking => booking.resources) // Ensure resource is not null
+              .map((booking: Booking) => ({
                 type: 'rebook',
                 resource: booking.resources,
                 bookingDetails: booking,
@@ -361,10 +367,20 @@ const Dashboard: React.FC = () => {
             .select('*, resources(*)')
             .eq('user_id', user.id)
             .lt('end_time', new Date().toISOString())
-            .order('end_time', { ascending: false })
-            .limit(3);
+            .order('end_time', { ascending: false });
+            // .limit(3);
         if (error) throw error;
-        const rebookItems: SuggestionItem[] = (data || []).map((booking: Booking) => ({
+        
+        // Group bookings by resource ID and get only the most recent one for each resource
+        const bookingsByResource = new Map();
+        (data || []).forEach((booking: Booking) => {
+            const resourceId = booking.resources?.id;
+            if (!bookingsByResource.has(resourceId)) {
+                bookingsByResource.set(resourceId, booking);
+            }
+        });
+        
+        const rebookItems: SuggestionItem[] = Array.from(bookingsByResource.values()).map((booking: Booking) => ({
             type: 'rebook',
             resource: booking.resources,
             bookingDetails: booking,
@@ -382,10 +398,14 @@ const Dashboard: React.FC = () => {
         let suggestionItems: SuggestionItem[] = [];
         if (randomIds.length > 0) {
             const { data: randomResourcesData } = await supabase.from('resources').select('*').in('id', randomIds);
-            suggestionItems = (randomResourcesData || []).map((resource: Resource) => ({
-                type: 'suggestion',
-                resource: resource,
-            }));
+            // Additional filter to ensure no duplicate resource IDs
+            const usedResourceIds = new Set(rebookItems.map(item => item.resource.id));
+            suggestionItems = (randomResourcesData || [])
+                .filter((resource: Resource) => !usedResourceIds.has(resource.id))
+                .map((resource: Resource) => ({
+                    type: 'suggestion',
+                    resource: resource,
+                }));
         }
 
         setSuggestionList([...rebookItems, ...suggestionItems]);
@@ -416,22 +436,22 @@ const Dashboard: React.FC = () => {
         return (
           <>
             <Navbar />
-            <div className="min-h-screen flex items-center justify-center pt-16">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <div className="min-h-screen flex items-center justify-center pt-16 bg-white">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#27548A]"></div>
             </div>
           </>
         );
     }
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
+    const COLORS = ['#27548A', '#DDA853', '#183B4E', '#FFFFFF', '#8B5A2B'];
 
     return (
         <>
             <Navbar />
             <div 
-              className="min-h-screen bg-gray-100 pt-16" 
+              className="min-h-screen pt-16" 
               style={user ? { 
-                backgroundImage: "url('/images/bg.png')",
+                backgroundColor: "#FFFFFF",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               } : {}}
@@ -439,43 +459,43 @@ const Dashboard: React.FC = () => {
                 <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                     {/* Top Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Card>
+                        <Card className="bg-white border-[#27548A]">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Upcoming Bookings</CardTitle>
-                                <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                                <CardTitle className="text-sm font-medium text-[#183B4E]">Upcoming Bookings</CardTitle>
+                                <CalendarCheck className="h-4 w-4 text-[#27548A]" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats.upcoming}</div>
+                                <div className="text-2xl font-bold text-[#183B4E]">{stats.upcoming}</div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="bg-white border-[#27548A]">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Completed Bookings</CardTitle>
-                                <CalendarX className="h-4 w-4 text-muted-foreground" />
+                                <CardTitle className="text-sm font-medium text-[#183B4E]">Completed Bookings</CardTitle>
+                                <CalendarX className="h-4 w-4 text-[#27548A]" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stats.completed}</div>
+                                <div className="text-2xl font-bold text-[#183B4E]">{stats.completed}</div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="bg-white border-[#27548A]">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Favourites</CardTitle>
-                                <Heart className="h-4 w-4 text-muted-foreground" />
+                                <CardTitle className="text-sm font-medium text-[#183B4E]">Favourites</CardTitle>
+                                <Heart className="h-4 w-4 text-[#27548A]" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{favourites.length}</div>
+                                <div className="text-2xl font-bold text-[#183B4E]">{favourites.length}</div>
                             </CardContent>
                         </Card>
                     </div>
 
                     {/* Quick Book Banner */}
-                    <div className="bg-gray-200 rounded-lg p-8 mb-8 text-center">
-                        <h2 className="text-2xl font-bold mb-4">Book your resources instantly</h2>
+                    <div className="bg-[#fffefe] border border-[#0b1623] rounded-lg p-8 mb-8 text-center">
+                        <h2 className="text-3xl font-bold mb-4 text-[#183B4E]">Book your resources instantly</h2>
                         <AiButton onClick={() => setShowQuickBook(true)}>Quick Book</AiButton>
                     </div>
 
                     <Dialog open={showQuickBook} onOpenChange={setShowQuickBook}>
-                        <DialogContent className="sm:max-w-[420px]">
+                        <DialogContent className="sm:max-w-[420px] bg-white">
                             <DialogHeader>
                             <DialogTitle>Quick Book</DialogTitle>
                             <DialogDescription>
@@ -540,82 +560,114 @@ const Dashboard: React.FC = () => {
                             {quickBookStep === 4 && (
                                 <div className="space-y-4">
                                 <label className="block font-medium mb-1">Time</label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                    <label htmlFor="start-time" className="text-sm font-medium">Start Time</label>
-                                    <select
-                                        id="start-time"
-                                        className="border rounded px-3 py-2 w-full mt-1"
-                                        value={selectedStartTime}
-                                        onChange={e => setSelectedStartTime(e.target.value)}
-                                    >
-                                        <option value="">Select</option>
-                                        {availableTimes.map(time => (
-                                        <option key={time} value={time}>{time}</option>
-                                        ))}
-                                    </select>
-                                    </div>
-                                    <div>
-                                    <label htmlFor="end-time" className="text-sm font-medium">End Time</label>
-                                    <select
-                                        id="end-time"
-                                        className="border rounded px-3 py-2 w-full mt-1"
-                                        value={selectedEndTime}
-                                        onChange={e => setSelectedEndTime(e.target.value)}
-                                        disabled={!selectedStartTime}
-                                    >
-                                        <option value="">Select</option>
-                                        {availableEndTimes.map(time => (
-                                        <option key={time} value={time}>{time}</option>
-                                        ))}
-                                    </select>
-                                    </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {TIME_SLOTS.map((time, index) => {
+                                    const isAvailable = availableTimes.includes(time);
+                                    
+                                    const handleTimeClick = () => {
+                                      if (!isAvailable) return;
+
+                                      if (!selectedStartTime || (selectedStartTime && selectedEndTime)) {
+                                        setSelectedStartTime(time);
+                                        setSelectedEndTime('');
+                                      } else {
+                                        if (time > selectedStartTime) {
+                                          const startIndex = TIME_SLOTS.indexOf(selectedStartTime);
+                                          const endIndex = TIME_SLOTS.indexOf(time);
+                                          const isRangeValid = TIME_SLOTS.slice(startIndex, endIndex).every(slot => availableTimes.includes(slot));
+                                          
+                                          if (isRangeValid) {
+                                            setSelectedEndTime(time);
+                                          } else {
+                                            toast({
+                                              variant: "destructive",
+                                              title: "Invalid selection",
+                                              description: "Time range cannot include booked slots."
+                                            });
+                                          }
+                                        } else {
+                                          // If end time is selected before start time, treat as new start time
+                                          setSelectedStartTime(time);
+                                          setSelectedEndTime('');
+                                        }
+                                      }
+                                    };
+
+                                    const isStart = time === selectedStartTime;
+                                    const isEnd = time === selectedEndTime;
+                                    const startIndex = TIME_SLOTS.indexOf(selectedStartTime);
+                                    const endIndex = TIME_SLOTS.indexOf(selectedEndTime);
+                                    const isInRange = selectedStartTime && selectedEndTime && index > startIndex && index < endIndex;
+
+                                    return (
+                                      <Button
+                                        key={time}
+                                        variant="outline"
+                                        onClick={handleTimeClick}
+                                        disabled={!isAvailable}
+                                        className={`rounded-full ${
+                                          !isAvailable
+                                            ? 'bg-red-100 text-red-700 cursor-not-allowed'
+                                            : isStart || isEnd
+                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                            : isInRange
+                                            ? 'bg-blue-200'
+                                            : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                        }`}
+                                      >
+                                        {time}
+                                      </Button>
+                                    );
+                                  })}
                                 </div>
                                 </div>
-                            )}
-                            {/* Step 5: Book Button */}
-                            {quickBookStep === 4 && selectedStartTime && selectedEndTime && (
-                            <div className="pt-4">
-                                <Button className="w-full" onClick={handleQuickBook}>
-                                Book
-                                </Button>
-                            </div>
                             )}
                             {/* Step navigation */}
                             <div className="flex justify-between pt-4">
-                            {quickBookStep > 1 && (
-                                <Button variant="ghost" onClick={() => setQuickBookStep(quickBookStep - 1)}>
-                                Back
-                                </Button>
-                            )}
-                            {quickBookStep < 4 && (
-                                <Button variant="ghost" onClick={() => setQuickBookStep(quickBookStep + 1)} disabled={
-                                    (quickBookStep === 1 && !selectedResourceType) ||
-                                    (quickBookStep === 2 && !selectedResourceId) ||
-                                    (quickBookStep === 3 && !selectedDate)
-                                }>
-                                Next
-                                </Button>
-                            )}
+                                <div>
+                                {quickBookStep > 1 && (
+                                    <Button variant="ghost" onClick={() => setQuickBookStep(quickBookStep - 1)}>
+                                        Back
+                                    </Button>
+                                )}
+                                </div>
+                                
+                                <div>
+                                {quickBookStep < 4 && (
+                                    <Button variant="ghost" onClick={() => setQuickBookStep(quickBookStep + 1)} disabled={
+                                        (quickBookStep === 1 && !selectedResourceType) ||
+                                        (quickBookStep === 2 && !selectedResourceId) ||
+                                        (quickBookStep === 3 && !selectedDate)
+                                    }>
+                                    Next
+                                    </Button>
+                                )}
+
+                                {quickBookStep === 4 && (
+                                    <Button onClick={handleQuickBook} disabled={!selectedStartTime || !selectedEndTime} style={{backgroundColor: "#0f172a", color: "#FFFFFF"}}>
+                                        Book
+                                    </Button>
+                                )}
+                                </div>
                             </div>
                         </DialogContent>
                     </Dialog>
 
                     {/* Main Content Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        <Card className="lg:col-span-2">
+                        <Card className="lg:col-span-2 bg-white border-[#27548A]">
                             <CardHeader>
-                                <CardTitle>Rebook & Suggestions</CardTitle>
+                                <CardTitle className="text-[#183B4E]">Rebook & Suggestions</CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {suggestionList.map(({ type, resource, bookingDetails }) => (
                                     <Link key={`${type}-${resource.id}`} to={`/calendar/${resource.id}`}>
-                                        <div className="p-4 border rounded-lg hover:bg-gray-50 relative">
-                                            <Badge variant="secondary" className="absolute top-2 right-2">{type === 'rebook' ? 'Rebook' : 'Suggestion'}</Badge>
-                                            <p className="font-semibold pr-16">{resource.name}</p>
-                                            <p className="text-sm text-gray-500">{resource.location}</p>
+                                        <div className="p-4 border border-[#27548A] rounded-lg hover:bg-white relative">
+                                            <Badge variant="secondary" className="absolute top-2 right-2 bg-[#DDA853] text-[#183B4E]">{type === 'rebook' ? 'Rebook' : 'Suggestion'}</Badge>
+                                            <p className="font-semibold pr-16 text-[#183B4E]">{resource.name}</p>
+                                            <p className="text-sm text-[#27548A]">{resource.location}</p>
                                             {type === 'rebook' && bookingDetails && (
-                                                <p className="text-xs text-gray-400 mt-1">
+                                                <p className="text-xs text-[#27548A] mt-1">
                                                     Last booked on {format(new Date(bookingDetails.start_time), 'PP')}
                                                 </p>
                                             )}
@@ -624,33 +676,33 @@ const Dashboard: React.FC = () => {
                                 ))}
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card className="bg-white border-[#27548A]">
                             <CardHeader>
-                                <CardTitle>Upcoming Bookings</CardTitle>
+                                <CardTitle className="text-[#183B4E]">Upcoming Bookings</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {upcomingBookings.length > 0 ? (
                                     <div className="space-y-4">
                                         {upcomingBookings.map(booking => (
-                                            <div key={booking.id} className="p-3 border rounded-lg">
-                                                <p className="font-semibold">{booking.resources.name}</p>
-                                                <p className="text-sm text-gray-500">{format(new Date(booking.start_time), 'PPp')}</p>
+                                            <div key={booking.id} className="p-3 border border-[#27548A] rounded-lg">
+                                                <p className="font-semibold text-[#183B4E]">{booking.resources.name}</p>
+                                                <p className="text-sm text-[#27548A]">{format(new Date(booking.start_time), 'PPp')}</p>
                                             </div>
                                         ))}
-                                        <Link to="/my-bookings" className="text-sm text-primary hover:underline">View all</Link>
+                                        <Link to="/my-bookings" className="text-sm text-[#27548A] hover:underline">View all</Link>
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-gray-500">No upcoming bookings.</p>
+                                    <p className="text-sm text-[#27548A]">No upcoming bookings.</p>
                                 )}
                             </CardContent>
                         </Card>
                     </div>
 
                     {/* Analytics */}
-                    <Card>
+                    <Card className="bg-white border-[#27548A]">
                         <CardHeader>
-                            <CardTitle>Analytics</CardTitle>
-                            <CardDescription>Resources in demand</CardDescription>
+                            <CardTitle className="text-[#183B4E]">Analytics</CardTitle>
+                            <CardDescription className="text-[#27548A]">Resources in demand</CardDescription>
                         </CardHeader>
                         <CardContent style={{ width: '100%', height: 300 }}>
                             <ResponsiveContainer>

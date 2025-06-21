@@ -258,7 +258,7 @@ const BookieChatbot: React.FC<BookieChatbotProps> = ({ geminiApiKey }) => {
 
       {/* Chat Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[500px] h-[600px] flex flex-col">
+        <DialogContent className="sm:max-w-[500px] h-[600px] flex flex-col bg-white">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">

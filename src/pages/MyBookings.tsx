@@ -250,11 +250,11 @@ const MyBookings: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'upcoming': return 'bg-blue-100 text-blue-800';
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-gray-100 text-gray-800';
+      case 'upcoming': return 'bg-[#27548A] text-white';
+      case 'active': return 'bg-[#DDA853] text-[#183B4E]';
+      case 'completed': return 'bg-white text-[#183B4E] border border-[#27548A]';
       case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-white text-[#183B4E] border border-[#27548A]';
     }
   };
 
@@ -290,12 +290,12 @@ const MyBookings: React.FC = () => {
   const renderBookingCard = (booking: Booking) => {
     const status = getBookingStatus(booking);
     return (
-      <Card key={booking.id}>
+      <Card key={booking.id} className="bg-white border-[#27548A]">
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl">{booking.resources.name}</CardTitle>
-              <CardDescription>{booking.resources.type}</CardDescription>
+              <CardTitle className="text-xl text-[#183B4E]">{booking.resources.name}</CardTitle>
+              <CardDescription className="text-[#27548A]">{booking.resources.type}</CardDescription>
             </div>
             <Badge className={getStatusColor(status)}>
               {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -306,10 +306,10 @@ const MyBookings: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-3">
               <div className="flex items-center text-sm">
-                <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                <Clock className="h-4 w-4 mr-2 text-[#27548A]" />
                 <div>
-                  <div>{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</div>
-                  <div className="text-gray-600">
+                  <div className="text-[#183B4E]">{format(new Date(booking.start_time), 'EEEE, MMMM d, yyyy')}</div>
+                  <div className="text-[#27548A]">
                     {format(new Date(booking.start_time), 'h:mm a')} - {format(new Date(booking.end_time), 'h:mm a')}
                   </div>
                 </div>
@@ -323,20 +323,20 @@ const MyBookings: React.FC = () => {
               
               {booking.notes && (
                 <div className="text-sm">
-                  <span className="font-medium">Notes:</span> {booking.notes}
+                  <span className="font-medium text-[#183B4E]">Notes:</span> <span className="text-[#27548A]">{booking.notes}</span>
                 </div>
               )}
               {booking.rating && (
                 <div className="flex items-center text-sm">
-                  <Star className="h-4 w-4 mr-1 text-yellow-500 fill-current" />
-                  <span>{booking.rating}/5 stars</span>
+                  <Star className="h-4 w-4 mr-1 text-[#DDA853] fill-current" />
+                  <span className="text-[#183B4E]">{booking.rating}/5 stars</span>
                 </div>
               )}
             </div>
 
             <div className="flex items-center justify-center">
               <div className="text-center">
-                <div className="mb-2 text-sm font-medium">Booking QR Code</div>
+                <div className="mb-2 text-sm font-medium text-[#183B4E]">Booking QR Code</div>
                 <QRCodeSVG
                   value={`${window.location.origin}/my-bookings/${booking.id}`}
                   size={80}
@@ -351,6 +351,7 @@ const MyBookings: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleEditBooking(booking)}
+                  className="border-[#27548A] text-[#27548A] hover:bg-white"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Booking
@@ -361,6 +362,7 @@ const MyBookings: React.FC = () => {
                   variant="destructive"
                   size="sm"
                   onClick={() => handleCancelBooking(booking)}
+                  className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Cancel Booking
@@ -374,6 +376,7 @@ const MyBookings: React.FC = () => {
                     setSelectedBooking(booking);
                     setShowFeedbackModal(true);
                   }}
+                  className="border-[#DDA853] text-[#DDA853] hover:bg-white"
                 >
                   <Star className="h-4 w-4 mr-2" />
                   Rate & Review
@@ -390,8 +393,8 @@ const MyBookings: React.FC = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-screen flex items-center justify-center pt-16">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="min-h-screen flex items-center justify-center pt-16 bg-white">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#27548A]"></div>
         </div>
       </>
     );
@@ -400,48 +403,59 @@ const MyBookings: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 pt-16">
+      <div className="min-h-screen bg-white pt-16">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bookings</h1>
-            <p className="text-gray-600">View and manage your current and past bookings</p>
+            <h1 className="text-3xl font-bold text-[#183B4E] mb-2">My Bookings</h1>
+            <p className="text-[#27548A]">View and manage your current and past bookings</p>
           </div>
 
-          <Tabs defaultValue="upcoming" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-            </TabsList>
-            <TabsContent value="upcoming">
-              {upcomingBookings.length > 0 ? (
-                <div className="space-y-6 mt-6">
-                  {upcomingBookings.map(renderBookingCard)}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No upcoming bookings</h3>
-                  <p className="text-gray-600 mb-4">Your future reservations will appear here.</p>
-                  <Button onClick={() => window.location.href = '/dashboard'}>
-                    Book a Resource
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="history">
-              {pastBookings.length > 0 ? (
-                <div className="space-y-6 mt-6">
-                  {pastBookings.map(renderBookingCard)}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No booking history</h3>
-                  <p className="text-gray-600">Your completed and cancelled bookings will appear here.</p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+          {upcomingBookings.length === 0 && pastBookings.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="mx-auto h-12 w-12 text-[#27548A] mb-4" />
+              <h3 className="text-lg font-medium text-[#183B4E] mb-2">No bookings yet</h3>
+              <p className="text-[#27548A] mb-4">Start by booking a resource from the dashboard</p>
+              <Button onClick={() => window.location.href = '/dashboard'} className="bg-[#27548A] hover:bg-[#183B4E] text-white">
+                Browse Resources
+              </Button>
+            </div>
+          ) : (
+            <Tabs defaultValue="upcoming" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-white border border-[#27548A]">
+                <TabsTrigger value="upcoming" className="text-[#183B4E] data-[state=active]:bg-[#27548A] data-[state=active]:text-white">Upcoming</TabsTrigger>
+                <TabsTrigger value="history" className="text-[#183B4E] data-[state=active]:bg-[#27548A] data-[state=active]:text-white">History</TabsTrigger>
+              </TabsList>
+              <TabsContent value="upcoming">
+                {upcomingBookings.length > 0 ? (
+                  <div className="space-y-6 mt-6">
+                    {upcomingBookings.map(renderBookingCard)}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Calendar className="mx-auto h-12 w-12 text-[#27548A] mb-4" />
+                    <h3 className="text-lg font-medium text-[#183B4E] mb-2">No upcoming bookings</h3>
+                    <p className="text-[#27548A] mb-4">Your future reservations will appear here.</p>
+                    <Button onClick={() => window.location.href = '/dashboard'} className="bg-[#27548A] hover:bg-[#183B4E] text-white">
+                      Book a Resource
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent value="history">
+                {pastBookings.length > 0 ? (
+                  <div className="space-y-6 mt-6">
+                    {pastBookings.map(renderBookingCard)}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Calendar className="mx-auto h-12 w-12 text-[#27548A] mb-4" />
+                    <h3 className="text-lg font-medium text-[#183B4E] mb-2">No booking history</h3>
+                    <p className="text-[#27548A]">Your completed and cancelled bookings will appear here.</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
 
           {showFeedbackModal && selectedBooking && (
             <FeedbackModal

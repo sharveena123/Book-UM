@@ -136,7 +136,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-white">
         <DialogHeader>
           <DialogTitle>
             {emailSent ? 'Confirm Update' : 'Edit Booking'}

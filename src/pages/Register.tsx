@@ -42,14 +42,14 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <Calendar className="mx-auto h-12 w-12 text-primary" />
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Create your account</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <Calendar className="mx-auto h-12 w-12 text-[#27548A]" />
+          <h2 className="mt-6 text-3xl font-extrabold text-[#183B4E]">Create your account</h2>
+          <p className="mt-2 text-sm text-[#27548A]">
             Or{' '}
-            <Link to="/login" className="font-medium text-primary hover:text-primary/80">
+            <Link to="/login" className="font-medium text-[#27548A] hover:text-[#183B4E]">
               sign in to your existing account
             </Link>
           </p>
@@ -58,13 +58,13 @@ const Register: React.FC = () => {
         <ShineBorder
           borderWidth={2}
           duration={10}
-          shineColor={["#ff7661", "#ff9900", "#ff8bb0"]}
+          shineColor={["#27548A", "#DDA853", "#183B4E"]}
           className="z-0"
         />
-        <Card>
+        <Card className="bg-white border-[#27548A]">
           <CardHeader>
-            <CardTitle>Get started</CardTitle>
-            <CardDescription>Create your account to start booking resources</CardDescription>
+            <CardTitle className="text-[#183B4E]">Get started</CardTitle>
+            <CardDescription className="text-[#27548A]">Create your account to start booking resources</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,6 +75,7 @@ const Register: React.FC = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
+                  className="border-[#27548A] text-[#183B4E]"
                 />
               </div>
               <div>
@@ -84,6 +85,7 @@ const Register: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="border-[#27548A] text-[#183B4E]"
                 />
               </div>
               <div>
@@ -94,6 +96,7 @@ const Register: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  className="border-[#27548A] text-[#183B4E]"
                 />
               </div>
               <div className="flex justify-center">

@@ -16,7 +16,7 @@ const options: ISourceOptions = {
       },
     },
     color: {
-      value: ["#7c3aed", "#bae6fd", "#a78bfa", "#93c5fd", "#0284c7", "#fafafa", "#38bdf8"],
+      value: ["#F3F3E0", "#27548A", "#183B4E", "#DDA853"],
     },
     shape: {
       type: "star",
@@ -131,12 +131,12 @@ export default function AiButton({ children, onClick }: AiButtonProps) {
 
   return (
     <button
-      className="group relative my-8 rounded-full bg-gradient-to-r from-blue-300/30 via-blue-500/30 via-40% to-purple-500/30 p-1 text-white transition-transform hover:scale-110 active:scale-105"
+      className="group relative my-8 rounded-full bg-gradient-to-r from-[#27548A]/30 via-[#DDA853]/30 via-40% to-[#183B4E]/30 p-1 text-white transition-transform hover:scale-110 active:scale-105"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onClick={onClick}
     >
-      <div className="relative flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-300 via-blue-500 via-40% to-purple-500 px-4 py-2 text-white">
+      <div className="relative flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0f172a] via-[#9c9ea0] via-50% to-[#0f172a] px-4 py-2 text-white">
         <Sparkle className="size-6 -translate-y-0.5 animate-sparkle fill-white" />
         <Sparkle
           style={{

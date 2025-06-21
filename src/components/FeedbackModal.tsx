@@ -76,7 +76,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-white">
         <DialogHeader>
           <DialogTitle>Rate Your Experience</DialogTitle>
           <DialogDescription>

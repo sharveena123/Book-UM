@@ -39,15 +39,15 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 bg-white shadow-lg border-b transition-transform duration-300 ${
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-white shadow-lg border-b border-[#27548A] transition-transform duration-300 ${
       isVisible ? 'translate-y-0' : '-translate-y-full'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center space-x-8">
             <Link to="/dashboard" className="flex items-center space-x-2">
-              <Calendar className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold">Book@UM</span>
+              <Calendar className="h-8 w-8 text-[#27548A]" />
+              <span className="text-xl font-bold text-[#183B4E]">Book@UM</span>
             </Link>
             
             
@@ -55,28 +55,28 @@ const Navbar: React.FC = () => {
               <div className="hidden md:flex space-x-4">
                 <Link 
                   to="/dashboard" 
-                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-50"
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-[#183B4E] hover:text-[#27548A] hover:bg-white"
                 >
                   <Home className="h-4 w-4" />
                   <span>Dashboard</span>
                 </Link>
                 <Link 
                 to="/resources" 
-                className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-200"
+                className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-[#183B4E] hover:text-[#27548A] hover:bg-white"
                 >
               <FileCog className="h-4 w-4" />
               <span>Resources</span>
             </Link>
                 <Link 
                   to="/my-bookings" 
-                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-200"
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-[#183B4E] hover:text-[#27548A] hover:bg-white"
                 >
                   <BookOpen className="h-4 w-4" />
                   <span>My Bookings</span>
                 </Link>
                 <Link 
                   to="/profile" 
-                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-200"
+                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-[#183B4E] hover:text-[#27548A] hover:bg-white"
                 >
                   <User className="h-4 w-4" />
                   <span>Profile</span>
@@ -88,12 +88,12 @@ const Navbar: React.FC = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <span className="text-sm text-gray-700">Welcome, {user.email}</span>
+                <span className="text-sm text-[#183B4E]">Welcome, {user.email}</span>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={handleSignOut}
-                  className="flex items-center space-x-1"
+                  className="flex items-center space-x-1 text-[#183B4E] hover:text-[#27548A] hover:bg-white"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Sign Out</span>
@@ -101,10 +101,10 @@ const Navbar: React.FC = () => {
               </>
             ) : (
               <div className="space-x-2">
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="text-[#183B4E] hover:text-[#27548A] hover:bg-white">
                   <Link to="/login">Sign In</Link>
                 </Button>
-                <Button size="sm" asChild>
+                <Button size="sm" asChild className="bg-[#27548A] hover:bg-[#183B4E] text-white">
                   <Link to="/register">Sign Up</Link>
                 </Button>
               </div>
