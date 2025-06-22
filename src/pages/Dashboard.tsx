@@ -210,10 +210,12 @@ const Dashboard: React.FC = () => {
                     return acc;
                 }, {});
         
-                const chartData = Object.keys(bookingCounts).map(name => ({
-                    name,
-                    value: bookingCounts[name]
-                }));
+                // Convert to array, sort by booking count (descending), and take top 5
+                const chartData = Object.entries(bookingCounts)
+                    .map(([name, value]) => ({ name, value }))
+                    .sort((a, b) => (b.value as number) - (a.value as number))
+                    .slice(0, 5);
+
                 setAnalyticsData(chartData);
             }
 
@@ -526,10 +528,12 @@ const Dashboard: React.FC = () => {
             return acc;
         }, {});
 
-        const chartData = Object.keys(bookingCounts).map(name => ({
-            name,
-            value: bookingCounts[name]
-        }));
+        // Convert to array, sort by booking count (descending), and take top 5
+        const chartData = Object.entries(bookingCounts)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => (b.value as number) - (a.value as number))
+            .slice(0, 5);
+
         setAnalyticsData(chartData);
     };
 
@@ -890,18 +894,42 @@ const Dashboard: React.FC = () => {
                                         data={analyticsData}
                                         cx="50%"
                                         cy="50%"
-                                        outerRadius={100}
+                                        outerRadius={120}
                                         fill="#8884d8"
                                         dataKey="value"
                                         nameKey="name"
-                                        label
+                                        label={({ name, value, percent }) => 
+                                            `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                                        }
+                                        labelLine={{
+                                            stroke: '#666',
+                                            strokeWidth: 1,
+                                            strokeDasharray: '3 3'
+                                        }}
                                     >
                                         {analyticsData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
-                                    <Legend />
+                                    <Tooltip 
+                                        formatter={(value, name) => [`${value} bookings`, name]}
+                                        labelStyle={{ color: '#183B4E', fontWeight: 'bold' }}
+                                        contentStyle={{
+                                            backgroundColor: 'white',
+                                            border: '1px solid #27548A',
+                                            borderRadius: '8px',
+                                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                                        }}
+                                    />
+                                    <Legend 
+                                        verticalAlign="bottom" 
+                                        height={36}
+                                        formatter={(value, entry) => (
+                                            <span style={{ color: '#183B4E', fontSize: '12px' }}>
+                                                {value}
+                                            </span>
+                                        )}
+                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                         </CardContent>
