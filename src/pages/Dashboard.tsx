@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,8 @@ const Dashboard: React.FC = () => {
     const [showQuickBook, setShowQuickBook] = useState(false);
     const { user } = useAuth();
     const { toast } = useToast();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     // Quick Book State
     const [quickBookStep, setQuickBookStep] = useState(1);
@@ -93,6 +95,27 @@ const Dashboard: React.FC = () => {
             setLoading(false);
         }
     }, [user]);
+
+    useEffect(() => {
+        if (location.state?.quickBookResourceId && allResources.length > 0) {
+            const resourceId = location.state.quickBookResourceId;
+            const resourceToBook = allResources.find(r => r.id === resourceId);
+
+            if (resourceToBook) {
+                setShowQuickBook(true);
+                setQuickBookStep(1);
+                setSelectedResourceType(resourceToBook.type);
+                
+                // Use timeout to ensure state propagation before setting resource ID
+                setTimeout(() => {
+                    setSelectedResourceId(resourceToBook.id);
+                }, 100);
+
+                // Clear location state to prevent re-triggering
+                navigate('.', { replace: true, state: {} });
+            }
+        }
+    }, [location.state, allResources, navigate]);
 
     const fetchAllDashboardData = async () => {
         setLoading(true);

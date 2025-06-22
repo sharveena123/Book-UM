@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -282,27 +282,29 @@ const Profile: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {favourites.map(resource => (
-                      <Card key={resource.id} className="h-full hover:shadow-lg transition-shadow bg-white border-[#27548A]">
-                        <CardHeader>
-                          <CardTitle className="text-[#183B4E]">{resource.name}</CardTitle>
-                          <CardDescription className="text-[#27548A]">{resource.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[#27548A] flex items-center"><MapPin className="h-4 w-4 mr-1" />{resource.location}</span>
-                            {resource.capacity && (
-                              <span className="text-[#27548A] flex items-center"><Users className="h-4 w-4 mr-1" />{resource.capacity}</span>
-                            )}
-                          </div>
-                          {resource.tags && resource.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {resource.tags.map((tag: string) => (
-                                <span key={tag} className="bg-white border border-[#27548A] rounded-full px-2 py-0.5 text-xs mr-1 text-[#183B4E]">{tag}</span>
-                              ))}
+                      <Link to={`/calendar/${resource.id}`} key={resource.id} className="block h-full">
+                        <Card className="h-full hover:shadow-lg transition-shadow bg-white border-[#27548A]">
+                          <CardHeader>
+                            <CardTitle className="text-[#183B4E]">{resource.name}</CardTitle>
+                            <CardDescription className="text-[#27548A]">{resource.description}</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-[#27548A] flex items-center"><MapPin className="h-4 w-4 mr-1" />{resource.location}</span>
+                              {resource.capacity && (
+                                <span className="text-[#27548A] flex items-center"><Users className="h-4 w-4 mr-1" />{resource.capacity}</span>
+                              )}
                             </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                            {resource.tags && resource.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {resource.tags.map((tag: string) => (
+                                  <span key={tag} className="bg-white border border-[#27548A] rounded-full px-2 py-0.5 text-xs mr-1 text-[#183B4E]">{tag}</span>
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
                 )}
