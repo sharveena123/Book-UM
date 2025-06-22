@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   MessageCircle, 
-  X, 
   Send, 
   Mic, 
   MicOff, 
@@ -280,7 +279,7 @@ const BookieChatbot: React.FC<BookieChatbotProps> = ({ geminiApiKey }) => {
                   onClick={() => setIsOpen(false)}
                   className="h-8 w-8 p-0"
                 >
-                  <X className="h-4 w-4" />
+                  {/* <X className="h-4 w-4" /> */}
                 </Button>
               </div>
             </div>
