@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +47,16 @@ const MyBookings: React.FC = () => {
   const [emailSent, setEmailSent] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState('upcoming');
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'history') {
+      setActiveTab('history');
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (user) {
@@ -432,9 +443,9 @@ const MyBookings: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <Tabs defaultValue="upcoming" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white border border-[#27548A]">
-                <TabsTrigger value="upcoming" className="text-[#183B4E] data-[state=active]:bg-[#27548A] data-[state=active]:text-white">Upcoming</TabsTrigger>
+              <TabsTrigger value="upcoming" className="text-[#183B4E] data-[state=active]:bg-[#27548A] data-[state=active]:text-white">Upcoming</TabsTrigger>
                 <TabsTrigger value="history" className="text-[#183B4E] data-[state=active]:bg-[#27548A] data-[state=active]:text-white">History</TabsTrigger>
               </TabsList>
               <TabsContent value="upcoming">

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +35,8 @@ const Profile: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [favourites, setFavourites] = useState<any[]>([]);
+  const location = useLocation();
+  const favouritesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -43,10 +46,19 @@ const Profile: React.FC = () => {
     }
   }, [user]);
 
-  // Scroll to top when component mounts
+  // Scroll to favourites section if hash is present
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    if (location.hash === '#favourites' && favouritesRef.current) {
+      favouritesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [location.hash, loading]); // Rerun when hash changes or after loading is complete
+
+  // Scroll to top when component mounts without a hash
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.hash]);
 
   const fetchProfile = async () => {
     try {
@@ -256,7 +268,7 @@ const Profile: React.FC = () => {
             </Card>
 
             {/* Favourites */}
-            <Card className="lg:col-span-2 bg-white border-[#27548A]">
+            <Card ref={favouritesRef} id="favourites" className="lg:col-span-2 bg-white border-[#27548A]">
               <CardHeader>
                 <CardTitle className="flex items-center text-[#183B4E]">
                   <Heart className="h-5 w-5 mr-2 text-[#DDA853]" />

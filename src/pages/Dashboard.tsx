@@ -459,33 +459,39 @@ const Dashboard: React.FC = () => {
                 <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                     {/* Top Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Card className="bg-white border-[#27548A]">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-[#183B4E]">Upcoming Bookings</CardTitle>
-                                <CalendarCheck className="h-4 w-4 text-[#27548A]" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-[#183B4E]">{stats.upcoming}</div>
-                            </CardContent>
-                        </Card>
-                        <Card className="bg-white border-[#27548A]">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-[#183B4E]">Completed Bookings</CardTitle>
-                                <CalendarX className="h-4 w-4 text-[#27548A]" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-[#183B4E]">{stats.completed}</div>
-                            </CardContent>
-                        </Card>
-                        <Card className="bg-white border-[#27548A]">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-[#183B4E]">Favourites</CardTitle>
-                                <Heart className="h-4 w-4 text-[#27548A]" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-[#183B4E]">{favourites.length}</div>
-                            </CardContent>
-                        </Card>
+                        <Link to="/my-bookings">
+                            <Card className="bg-[#e8ffef] border-[#27548A] hover:shadow-lg transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-[#183B4E]">Upcoming Bookings</CardTitle>
+                                    <CalendarCheck className="h-4 w-4 text-[#27548A]" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-[#183B4E]">{stats.upcoming}</div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link to="/my-bookings?tab=history">
+                            <Card className="bg-[#ecedff] border-[#27548A] hover:shadow-lg transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-[#183B4E]">Completed Bookings</CardTitle>
+                                    <CalendarX className="h-4 w-4 text-[#27548A]" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-[#183B4E]">{stats.completed}</div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        <Link to="/profile#favourites">
+                            <Card className="bg-[#ffe3e3] border-[#27548A] hover:shadow-lg transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium text-[#183B4E]">Favourites</CardTitle>
+                                    <Heart className="h-4 w-4 text-[#27548A]" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-[#183B4E]">{favourites.length}</div>
+                                </CardContent>
+                            </Card>
+                        </Link>
                     </div>
 
                     {/* Quick Book Banner */}
