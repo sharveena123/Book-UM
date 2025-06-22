@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,6 +41,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="absolute top-8 left-8 text-[#27548A] hover:text-[#183B4E]">
+            &larr; Back 
+        </Link>
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Calendar className="mx-auto h-12 w-12 text-[#27548A]" />
@@ -54,14 +56,12 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        <div className="relative rounded-xl">
-        <ShineBorder
-          borderWidth={2}
-          duration={10}
-          shineColor={["#27548A", "#DDA853", "#183B4E"]}
-          className="z-0"
-        />
-        <Card className="relative z-10 bg-white border-[#27548A]">
+        <div className="relative rounded-xl bg-white shadow-sm border border-transparent text-card-foreground">
+          <ShineBorder
+            borderWidth={2}
+            duration={10}
+            shineColor={["#27548A", "#DDA853", "#183B4E"]}
+          />
           <CardHeader>
             <CardTitle className="text-[#183B4E]">Welcome back</CardTitle>
             <CardDescription className="text-[#27548A]">Enter your credentials to access your bookings</CardDescription>
@@ -96,9 +96,8 @@ const Login: React.FC = () => {
               </div>
             </form>
           </CardContent>
-        </Card>
+        </div>
       </div>
-    </div>
     </div>
   );
 };

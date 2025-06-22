@@ -249,7 +249,7 @@ const BookieChatbot: React.FC<BookieChatbotProps> = ({ geminiApiKey }) => {
       {/* Floating Button */}
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 z-50"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg bg-[#d0d2f4] hover:bg-blue-300 z-50"
         size="icon"
       >
         <MessageCircle className="h-6 w-6" />
