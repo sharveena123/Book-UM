@@ -86,7 +86,7 @@ A modern, AI-powered resource booking system designed for university campus. Boo
 3. **Analytics** - View booking statistics and usage patterns
 4. **System Configuration** - Configure booking rules and policies
 
-### Upcoming Features
+## Upcoming Features
 - **Mobile App** - Native iOS/Android applications
 - **Advanced Analytics** - Detailed usage insights
 - **Integration APIs** - Third-party system integration
