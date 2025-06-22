@@ -41,6 +41,7 @@ const CalendarView: React.FC = () => {
   const [week, setWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<{ start: Date; end: Date }[]>([]);
+  const [bookingRange, setBookingRange] = useState<{ start: Date; end: Date } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,6 +66,17 @@ const CalendarView: React.FC = () => {
       };
     }
   }, [resourceId, week]);
+
+  useEffect(() => {
+    if (selectedSlots.length > 0) {
+      const sortedSlots = [...selectedSlots].sort((a, b) => a.start.getTime() - b.start.getTime());
+      const start = sortedSlots[0].start;
+      const end = sortedSlots[sortedSlots.length - 1].end;
+      setBookingRange({ start, end });
+    } else {
+      setBookingRange(null);
+    }
+  }, [selectedSlots]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -320,7 +332,7 @@ const CalendarView: React.FC = () => {
               isOpen={showBookingModal}
               onClose={() => setShowBookingModal(false)}
               resource={resource}
-              timeSlots={selectedSlots}
+              bookingRange={bookingRange}
               onSuccess={handleBookingSuccess}
             />
           )}
