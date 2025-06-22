@@ -14,6 +14,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import AiButton from '@/components/animata/button/ai-button';
 import BlurryBlob from "@/components/animata/background/blurry-blob"; // adjust path if needed
+import { sendBookingEmail } from '@/lib/email';
 
 
 interface Resource {
@@ -80,6 +81,7 @@ const Dashboard: React.FC = () => {
     const [selectedEndTime, setSelectedEndTime] = useState('');
     const [availableEndTimes, setAvailableEndTimes] = useState<string[]>([]);
     const [bookingsForResource, setBookingsForResource] = useState<QuickBookBooking[]>([]);
+    const [quickBookEmailSent, setQuickBookEmailSent] = useState(false);
 
     const TIME_SLOTS = [
       '08:00', '09:00', '10:00', '11:00', '12:00',
@@ -217,7 +219,6 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         if (selectedResourceType) {
             setFilteredResources(allResources.filter(r => r.type === selectedResourceType));
-            setSelectedResourceId('');
         } else {
             setFilteredResources([]);
         }
@@ -266,6 +267,7 @@ const Dashboard: React.FC = () => {
         if (!selectedStartTime) {
           setAvailableEndTimes([]);
           setSelectedEndTime('');
+          setQuickBookEmailSent(false);
           return;
         }
     
@@ -292,7 +294,57 @@ const Dashboard: React.FC = () => {
 
         setAvailableEndTimes(possibleEndTimes);
         setSelectedEndTime('');
-      }, [selectedStartTime, availableTimes]);
+        setQuickBookEmailSent(false);
+      }, [selectedStartTime, availableTimes, bookingsForResource]);
+
+    const handleSendQuickBookEmail = async () => {
+        if (!user || !selectedDate || !selectedStartTime || !selectedEndTime) {
+            toast({
+                variant: "destructive",
+                title: "Incomplete details",
+                description: "Please select a valid date and time range."
+            });
+            return;
+        }
+
+        const resource = allResources.find(r => r.id === selectedResourceId);
+        if (!resource) {
+            toast({ variant: "destructive", title: "Resource not found" });
+            return;
+        }
+
+        const startDateTime = new Date(selectedDate);
+        const [startHour, startMinute] = selectedStartTime.split(':').map(Number);
+        startDateTime.setHours(startHour, startMinute);
+
+        const endDateTime = new Date(selectedDate);
+        const [endHour, endMinute] = selectedEndTime.split(':').map(Number);
+        endDateTime.setHours(endHour, endMinute);
+
+        try {
+            await sendBookingEmail({
+                email: user.email!,
+                userName: user.user_metadata?.full_name || user.email!,
+                resourceName: resource.name,
+                startTime: startDateTime.toISOString(),
+                endTime: endDateTime.toISOString(),
+                location: resource.location,
+                bookingId: 'PENDING',
+                action: 'created',
+            });
+            toast({
+                title: "Confirmation Email Sent",
+                description: "Please check your email to review your booking details.",
+            });
+            setQuickBookEmailSent(true);
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Email Failed",
+                description: "Could not send confirmation email. Please try again.",
+            });
+        }
+    };
 
     const handleQuickBook = async () => {
         if (!user) {
@@ -690,9 +742,14 @@ const Dashboard: React.FC = () => {
                                     </Button>
                                 )}
 
-                                {quickBookStep === 4 && (
-                                    <Button onClick={handleQuickBook} disabled={!selectedStartTime || !selectedEndTime} style={{backgroundColor: "#0f172a", color: "#FFFFFF"}}>
-                                        Book
+                                {quickBookStep === 4 && !quickBookEmailSent && (
+                                    <Button className="bg-[#666565] border-[#27548A] hover:bg-[#111924] text-white" onClick={handleSendQuickBookEmail} disabled={!selectedStartTime || !selectedEndTime}>
+                                        Send Confirmation Email
+                                    </Button>
+                                )}
+                                {quickBookStep === 4 && quickBookEmailSent && (
+                                    <Button className="bg-[#211f3e] border-[#27548A] hover:bg-[#111924] text-white" onClick={handleQuickBook} >
+                                        Confirm Booking
                                     </Button>
                                 )}
                                 </div>

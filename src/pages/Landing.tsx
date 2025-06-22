@@ -64,35 +64,7 @@ const imagePaths = [
 //   return `https://picsum.photos/seed/${i + 1}/${width}/${height}`;
 // });
 
-  const facilities = [
-    { name: "Study Pods", icon: "📚", description: "Quiet private spaces for focused study" },
-    { name: "Meeting Rooms", icon: "🏢", description: "Professional spaces for team collaboration" },
-    { name: "Sports Courts", icon: "🏸", description: "Badminton, tennis, and basketball courts" },
-    { name: "Fitness Areas", icon: "💪", description: "Gym facilities and yoga studios" },
-    { name: "Lab Equipment", icon: "🔬", description: "Specialized equipment for research" },
-    { name: "Swimming Pool", icon: "🏊", description: "Olympic-size pool with lane booking" }
-  ];
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Computer Science Student",
-      content: "Book@UM made it so easy to reserve study pods during exam season. The real-time availability is a game changer!",
-      rating: 5
-    },
-    {
-      name: "Dr. Michael Chen",
-      role: "Research Professor",
-      content: "Booking lab equipment has never been easier. The system prevents conflicts and sends helpful reminders.",
-      rating: 5
-    },
-    {
-      name: "Lisa Williams",
-      role: "Sports Enthusiast",
-      content: "I love how I can book badminton courts weeks in advance. The QR code feature is super convenient!",
-      rating: 5
-    }
-  ];
 
   useEffect(() => {
     if (user) {

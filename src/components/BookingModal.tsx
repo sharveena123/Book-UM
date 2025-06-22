@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Calendar, Clock, MapPin, User, Navigation } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { sendBookingEmail } from '@/lib/email';
 
 interface Resource {
   id: string;
@@ -35,8 +36,40 @@ const BookingModal: React.FC<BookingModalProps> = ({
 }) => {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const handleSendEmail = async () => {
+    if (!user || !bookingRange) return;
+
+    setLoading(true);
+    try {
+        await sendBookingEmail({
+            email: user.email!,
+            userName: user.user_metadata?.full_name || user.email!,
+            resourceName: resource.name,
+            startTime: bookingRange.start.toISOString(),
+            endTime: bookingRange.end.toISOString(),
+            location: resource.location,
+            bookingId: 'PENDING',
+            action: 'created',
+        });
+        toast({
+            title: "Confirmation Email Sent",
+            description: "Please check your email to review your booking details.",
+        });
+        setEmailSent(true);
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Email Failed",
+            description: "Could not send confirmation email. Please try again.",
+        });
+    } finally {
+        setLoading(false);
+    }
+  };
 
   const handleConfirmBooking = async () => {
     if (!user || !bookingRange) return;
@@ -92,9 +125,11 @@ const BookingModal: React.FC<BookingModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[450px] bg-white">
         <DialogHeader>
-          <DialogTitle>Confirm Your Booking</DialogTitle>
+          <DialogTitle>{emailSent ? 'Confirm Your Booking' : 'Review Booking Details'}</DialogTitle>
           <DialogDescription>
-            Review your booking details below and confirm to book the resource.
+            {emailSent
+              ? 'Review your booking details and confirm to book the resource.'
+              : 'Please send a confirmation email before booking.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -140,9 +175,15 @@ const BookingModal: React.FC<BookingModalProps> = ({
           <Button type="button" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="button" onClick={handleConfirmBooking} disabled={loading}>
-            {loading ? 'Confirming...' : 'Confirm Booking'}
-          </Button>
+          {!emailSent ? (
+            <Button className="bg-[#767676] hover:bg-[#4e4e4f] text-white" type="button" onClick={handleSendEmail} disabled={loading}>
+              {loading ? 'Sending...' : 'Send Email'}
+            </Button>
+          ) : (
+            <Button className="bg-[#211f3e] border-[#27548A] hover:bg-[#111924] text-white" type="button" onClick={handleConfirmBooking} disabled={loading}>
+              {loading ? 'Confirming...' : 'Confirm Booking'}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
