@@ -88,6 +88,7 @@ const MyBookings: React.FC = () => {
         .select(`*, resources(id, name, type, location)`)
         .eq('user_id', user!.id)
         .or(`status.eq.cancelled,start_time.lt.${new Date().toISOString()}`)
+        .order('status', { ascending: false })
         .order('start_time', { ascending: false });
 
       if (pastError) throw pastError;

@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import AiButton from '@/components/animata/button/ai-button';
+import BlurryBlob from "@/components/animata/background/blurry-blob"; // adjust path if needed
+
 
 interface Resource {
   id: string;
@@ -495,10 +497,26 @@ const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Quick Book Banner */}
-                    <div className="bg-[#fffefe] border border-[#0b1623] rounded-lg p-8 mb-8 text-center">
-                        <h2 className="text-3xl font-bold mb-4 text-[#183B4E]">Book your resources instantly</h2>
-                        <AiButton onClick={() => setShowQuickBook(true)}>Quick Book</AiButton>
-                    </div>
+                    <div className="relative min-h-[60vh] flex items-center justify-center border border-[#0b1623] rounded-lg p-8 mb-8 overflow-hidden bg-[#fffefe]">
+  {/* Background blobs container */}
+  <div className="absolute inset-0 z-0">
+    <BlurryBlob
+      firstBlobColor="bg-yellow-300"
+      secondBlobColor="bg-blue-300"
+      firstBlobClassName="top-0 left-0"
+      secondBlobClassName="bottom-0 right-0"
+    />
+  </div>
+
+  {/* Foreground content */}
+  <div className="relative z-10 text-center">
+    <h2 className="text-3xl font-bold mb-4 text-[#183B4E]">Book your resources instantly</h2>
+    <AiButton onClick={() => setShowQuickBook(true)}>Quick Book</AiButton>
+  </div>
+</div>
+
+
+
 
                     <Dialog open={showQuickBook} onOpenChange={setShowQuickBook}>
                         <DialogContent className="sm:max-w-[420px] bg-white">
@@ -663,7 +681,7 @@ const Dashboard: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                         <Card className="lg:col-span-2 bg-white border-[#27548A]">
                             <CardHeader>
-                                <CardTitle className="text-[#183B4E]">Rebook & Suggestions</CardTitle>
+                                <CardTitle className="text-[#183B4E]">Suggestions</CardTitle>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {suggestionList.map(({ type, resource, bookingDetails }) => (
@@ -709,10 +727,10 @@ const Dashboard: React.FC = () => {
                     {/* Analytics */}
                     <Card className="bg-white border-[#27548A]">
                         <CardHeader>
-                            <CardTitle className="text-[#183B4E]">Most booked resources</CardTitle>
+                            <CardTitle className="text-[#183B4E]">Most booked resources by you</CardTitle>
                             {/* <CardDescription className="text-[#27548A]">Resources in demand</CardDescription> */}
                         </CardHeader>
-                        <CardContent style={{ width: '100%', height: 300 }}>
+                        <CardContent style={{ width: '100%', height: 500 }}>
                             <ResponsiveContainer>
                                 <PieChart>
                                     <Pie
