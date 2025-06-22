@@ -2,7 +2,7 @@
 
 A modern, AI-powered resource booking system designed for university campus. Book study pods, meeting rooms, lab equipment, and more with instant confirmations and intelligent features.
 
-###Link to Book@UM -> https://book-um.vercel.app/
+### Link to Book@UM -> https://book-um.vercel.app/
 
 ## 🚀 Features
 
