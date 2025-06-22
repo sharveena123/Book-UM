@@ -292,7 +292,7 @@ const CalendarView: React.FC = () => {
                 <tr className="bg-gray-100">
                   <th className="p-2 text-sm font-semibold">Time</th>
                   {Array.from({ length: 7 }, (_, i) => addDays(week, i)).map(day => (
-                    <th key={day.toISOString()} className="p-2 text-sm font-semibold">
+                    <th key={day.toISOString()} className="p-2  text-sm font-semibold">
                       {format(day, 'EEE')} <br /> {format(day, 'd')}
                     </th>
                   ))}
@@ -308,7 +308,7 @@ const CalendarView: React.FC = () => {
                 <p className="font-semibold mb-4">
                   {formatSelectedSlots()}
                 </p>
-                <Button size="lg" onClick={() => setShowBookingModal(true)}>Book Now</Button>
+                <Button className="bg-[#27548A] hover:bg-[#111924] text-white" size="lg" onClick={() => setShowBookingModal(true)}>Book Now</Button>
             </div>
           )}
           </div>
