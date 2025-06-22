@@ -13,11 +13,11 @@ interface SendBookingEmailProps {
 }
 
 // EmailJS configuration
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID; // You'll need to replace this with your EmailJS service ID
-const EMAILJS_TEMPLATE_ID_CONFIRMED = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_CONFIRMED; // Template ID for booking confirmed
-const EMAILJS_TEMPLATE_ID_UPDATED = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_UPDATED; // Template ID for booking updated
-const EMAILJS_TEMPLATE_ID_CANCELLED = import.meta.env.VITE_EMAILJS_TEMPLATE_ID_CANCELLED; // Template ID for booking cancelled
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY; // You'll need to replace this with your EmailJS public key
+const EMAILJS_SERVICE_ID = 'service_yzrr51q'; // You'll need to replace this with your EmailJS service ID
+const EMAILJS_TEMPLATE_ID_CONFIRMED = 'template_yfujy7p'; // Template ID for booking confirmed
+const EMAILJS_TEMPLATE_ID_UPDATED = 'template_petkbe1'; // Template ID for booking updated
+const EMAILJS_TEMPLATE_ID_CANCELLED = 'template_xxxxxxx'; // Template ID for booking cancelled
+const EMAILJS_PUBLIC_KEY = 'ryE9j9C8jaN6nWIAR'; // You'll need to replace this with your EmailJS public key
 
 export const sendBookingEmail = async (props: SendBookingEmailProps) => {
   try {
