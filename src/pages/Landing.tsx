@@ -111,7 +111,7 @@ firstBlobClassName="top-10 left-0"
       {/* 🧱 Main Content */}
       <div className="relative w-full h-full px-6 py-10 flex flex-col justify-start items-start">
         <div className="w-full max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between items-center w-full gap-12">
+        <div className="flex flex-col-reverse lg:flex-row justify-between items-center w-full gap-12">
             
             {/* 📌 Left Content */}
             <div className="text-left max-w-xl text-center">
@@ -196,7 +196,7 @@ firstBlobClassName="top-10 left-0"
     </section>
 
 
-    <section id="photos">
+    <section id="photos" className="bg-white">
     <BlurFade delay={0.25 * 2} inView className="text-center px-20 py-10">
             <h2 className="text-5xl font-bold tracking-tighter text-gray-900 mb-4">Available Facilities</h2>
             <p className="text-gray-600 tracking-tighter">Book from a wide range of campus resources</p>
@@ -218,27 +218,27 @@ firstBlobClassName="top-10 left-0"
 {/* 
  
       {/* reviews */}
-      <section className="my-12">
-        <h2 className="text-2xl font-bold text-center mb-6">What our users say</h2>
+      <section className="my-12  bg-gray-100">
+        <h2 className="text-4xl py-10 font-bold text-center mb-6">What our users say</h2>
         <MarqueeDemo />
       </section>
 
 
       {/* CTA Section */}
-      <section className="py-16 bg-[#eff4ff] text-[#110d2c]">
-        
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join the thousands of users who trust Book@UM for their resource booking needs
-          </p>
-          <div className="space-x-4">
-            <InteractiveHoverButton >
-              <Link to="/register">
-                Create Account  
-              </Link>
-            </InteractiveHoverButton>
-  
+      <section className=" py-20 mb-20 bg-white text-[#110d2c]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white py-10 p-8 rounded-lg border text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+            <p className="text-xl mb-8 opacity-90">
+              Join the thousands of users who trust Book@UM for their resource booking needs
+            </p>
+            <div className="space-x-4">
+              <InteractiveHoverButton>
+                <Link to="/register">
+                  Create Account
+                </Link>
+              </InteractiveHoverButton>
+            </div>
           </div>
         </div>
       </section>
