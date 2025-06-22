@@ -145,6 +145,18 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  const generateGoogleCalendarUrl = (booking: Booking) => {
+    const event = {
+      title: `${booking.resources.name} - Booking`,
+      description: `Your booking for ${booking.resources.name} (${booking.resources.type}).\nNotes: ${booking.notes || 'N/A'}`,
+      location: booking.resources.location,
+      start: new Date(booking.start_time).toISOString().replace(/-|:|\.\d\d\d/g,""),
+      end: new Date(booking.end_time).toISOString().replace(/-|:|\.\d\d\d/g,"")
+    };
+
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.start}/${event.end}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+  };
+
   const handleSendCancellationEmail = async () => {
     if (!cancellingBooking || !user) return;
 
@@ -327,17 +339,35 @@ const MyBookings: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col mt-5 space-y-2">
               {canEdit(booking) && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleEditBooking(booking)}
-                  className="border-[#27548A] text-[#27548A] hover:bg-white"
+                  className="border-[#27548A] text-[#27548A] hover:bg-gray-200"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Booking
                 </Button>
+              )}
+              {getBookingStatus(booking) === 'upcoming' && (
+                <a
+                href={generateGoogleCalendarUrl(booking)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-[#27548A] bg-blue-500 text-[#000000] hover:bg-blue-800"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Add to Google Calendar
+                </Button>
+              </a>
+              
               )}
               {canCancel(booking) && (
                 <Button
