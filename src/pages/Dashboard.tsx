@@ -8,13 +8,16 @@ import Navbar from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 import { format, isAfter, isBefore, addDays, startOfDay } from 'date-fns';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Briefcase, CalendarCheck, CalendarX, Heart, Clock, MapPin } from 'lucide-react';
+import { Briefcase, CalendarCheck, CalendarX, Heart, Clock, MapPin, Calendar as CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import AiButton from '@/components/animata/button/ai-button';
 import BlurryBlob from "@/components/animata/background/blurry-blob"; // adjust path if needed
 import { sendBookingEmail } from '@/lib/email';
+import { cn } from '@/lib/utils';
+import Stepper, { Step } from "@/components/animata/progress/stepper";
 
 
 interface Resource {
@@ -88,6 +91,22 @@ const Dashboard: React.FC = () => {
       '13:00', '14:00', '15:00', '16:00', '17:00',
       '18:00', '19:00', '20:00',
     ];
+    const isStepDisabled = (step: number): boolean => {
+        switch (step) {
+          case 1:
+            return !selectedResourceType;
+          case 2:
+            return !selectedResourceId;
+          case 3:
+            return !selectedDate;
+          case 4:
+            return !(selectedStartTime && selectedEndTime);
+          case 5:
+            return !quickBookEmailSent;
+          default:
+            return false;
+        }   
+      };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -219,6 +238,7 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         if (selectedResourceType) {
             setFilteredResources(allResources.filter(r => r.type === selectedResourceType));
+            setSelectedResourceId('');
         } else {
             setFilteredResources([]);
         }
@@ -346,6 +366,7 @@ const Dashboard: React.FC = () => {
         }
     };
 
+
     const handleQuickBook = async () => {
         if (!user) {
           toast({
@@ -462,6 +483,9 @@ const Dashboard: React.FC = () => {
             resource: booking.resources,
             bookingDetails: booking,
         }));
+
+ 
+          
 
         const rebookResourceIds = new Set(rebookItems.map(item => item.resource.id));
         
@@ -593,170 +617,219 @@ const Dashboard: React.FC = () => {
 
 
 
-                    <Dialog open={showQuickBook} onOpenChange={setShowQuickBook}>
-                        <DialogContent className="sm:max-w-[420px] bg-white">
-                            <DialogHeader>
-                            <DialogTitle>Quick Book</DialogTitle>
-                            <DialogDescription>
-                                Book a resource in a few quick steps.
-                            </DialogDescription>
-                            </DialogHeader>
-                            {/* Step 1: Category */}
-                            {quickBookStep === 1 && (
-                            <div className="space-y-4">
-                                <label className="block font-medium mb-1">Category</label>
-                                <select
-                                className="border rounded px-3 py-2 w-full"
-                                value={selectedResourceType}
-                                onChange={e => {
-                                    setSelectedResourceType(e.target.value);
-                                    setQuickBookStep(2);
-                                }}
-                                >
-                                <option value="">Select category</option>
-                                {resourceTypes.map(type => (
-                                    <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
-                                ))}
-                                </select>
-                            </div>
-                            )}
-                            {/* Step 2: Place */}
-                            {quickBookStep === 2 && (
-                            <div className="space-y-4">
-                                <label className="block font-medium mb-1">Place</label>
-                                <select
-                                className="border rounded px-3 py-2 w-full"
-                                value={selectedResourceId}
-                                onChange={e => {
-                                    setSelectedResourceId(e.target.value);
-                                    setQuickBookStep(3);
-                                }}
-                                >
-                                <option value="">Select place</option>
-                                {filteredResources.map(resource => (
-                                    <option key={resource.id} value={resource.id}>{resource.name} ({resource.location})</option>
-                                ))}
-                                </select>
-                            </div>
-                            )}
-                            {/* Step 3: Date */}
-                            {quickBookStep === 3 && (
-                            <div className="space-y-4">
-                                <label className="block font-medium mb-1">Date</label>
-                                <Calendar
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={date => {
-                                    setSelectedDate(date);
-                                    setQuickBookStep(4);
-                                }}
-                                fromDate={new Date()}
-                                className="max-w-xs mx-auto"
-                                />
-                            </div>
-                            )}
-                            {/* Step 4: Time */}
-                            {quickBookStep === 4 && (
-                                <div className="space-y-4">
-                                <label className="block font-medium mb-1">Time</label>
-                                <div className="flex flex-wrap gap-2">
-                                  {TIME_SLOTS.map((time, index) => {
-                                    const isAvailable = availableTimes.includes(time);
-                                    
-                                    const handleTimeClick = () => {
-                                      if (!isAvailable) return;
+<Dialog open={showQuickBook} onOpenChange={(open) => {
+        setShowQuickBook(open);
+        if (!open) {
+          setQuickBookStep(1);
+          setSelectedResourceType('');
+          setSelectedResourceId('');
+          setSelectedDate(undefined);
+          setSelectedStartTime('');
+          setSelectedEndTime('');
+          setBookingsForResource([]);
+          setQuickBookEmailSent(false);
+        }
+      }}>
+ 
 
-                                      if (!selectedStartTime || (selectedStartTime && selectedEndTime)) {
-                                        setSelectedStartTime(time);
-                                        setSelectedEndTime('');
-                                      } else {
-                                        if (time > selectedStartTime) {
-                                          const startIndex = TIME_SLOTS.indexOf(selectedStartTime);
-                                          const endIndex = TIME_SLOTS.indexOf(time);
-                                          const isRangeValid = TIME_SLOTS.slice(startIndex, endIndex).every(slot => availableTimes.includes(slot));
-                                          
-                                          if (isRangeValid) {
-                                            setSelectedEndTime(time);
-                                          } else {
-                                            toast({
-                                              variant: "destructive",
-                                              title: "Invalid selection",
-                                              description: "Time range cannot include booked slots."
-                                            });
-                                          }
-                                        } else {
-                                          // If end time is selected before start time, treat as new start time
-                                          setSelectedStartTime(time);
-                                          setSelectedEndTime('');
-                                        }
-                                      }
-                                    };
+        <DialogContent className="max-w-4xl max-h-[100vh] overflow-y-auto bg-white py-10">
+          <DialogHeader>
+            <DialogTitle>Quick Book</DialogTitle>
+          </DialogHeader>
 
-                                    const isStart = time === selectedStartTime;
-                                    const isEnd = time === selectedEndTime;
-                                    const startIndex = TIME_SLOTS.indexOf(selectedStartTime);
-                                    const endIndex = TIME_SLOTS.indexOf(selectedEndTime);
-                                    const isInRange = selectedStartTime && selectedEndTime && index > startIndex && index < endIndex;
+          <Stepper
+            className="mt-6"
+            initialStep={quickBookStep}
+            onStepChange={(step) => {
+              setQuickBookStep(step);
+            }}
+            onFinalStepCompleted={handleQuickBook}
+            backButtonText="Back"
+            nextButtonText="Next"
+            canNavigateToStep={(step, currentStep) => {
+              // Allow navigation to current step or previous steps
+              if (step <= currentStep) return true;
+              
+              // For future steps, check if all previous steps are completed
+              for (let i = 1; i < step; i++) {
+                if (isStepDisabled(i)) return false;
+              }
+              return true;
+            }}
+            nextButtonProps={{
+                disabled: isStepDisabled(quickBookStep),
+                children: quickBookStep === 5 ? 'Confirm Booking' : 'Next'
+            }}
+          >
+            <Step>
+              <h2 className="text-xl font-semibold mb-2">Select Resource Type</h2>
+              <p className="text-sm text-gray-600 mb-3">Choose the type of resource you want to book</p>
+              <select
+                value={selectedResourceType}
+                onChange={(e) => setSelectedResourceType(e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">-- Choose Type --</option>
+                {resourceTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </Step>
 
-                                    return (
-                                      <Button
-                                        key={time}
-                                        variant="outline"
-                                        onClick={handleTimeClick}
-                                        disabled={!isAvailable}
-                                        className={`rounded-full ${
-                                          !isAvailable
-                                            ? 'bg-red-100 text-red-700 cursor-not-allowed'
-                                            : isStart || isEnd
-                                            ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                            : isInRange
-                                            ? 'bg-blue-200'
-                                            : 'bg-green-100 text-green-800 hover:bg-green-200'
-                                        }`}
-                                      >
-                                        {time}
-                                      </Button>
-                                    );
-                                  })}
-                                </div>
-                                </div>
-                            )}
-                            {/* Step navigation */}
-                            <div className="flex justify-between pt-4">
-                                <div>
-                                {quickBookStep > 1 && (
-                                    <Button variant="ghost" onClick={() => setQuickBookStep(quickBookStep - 1)}>
-                                        Back
-                                    </Button>
-                                )}
-                                </div>
-                                
-                                <div>
-                                {quickBookStep < 4 && (
-                                    <Button variant="ghost" onClick={() => setQuickBookStep(quickBookStep + 1)} disabled={
-                                        (quickBookStep === 1 && !selectedResourceType) ||
-                                        (quickBookStep === 2 && !selectedResourceId) ||
-                                        (quickBookStep === 3 && !selectedDate)
-                                    }>
-                                    Next
-                                    </Button>
-                                )}
+            <Step>
+              <h2 className="text-xl font-semibold mb-2">Choose Resource</h2>
+              <p className="text-sm text-gray-600 mb-3">Select a specific resource from the available options</p>
+              <select
+                value={selectedResourceId}
+                onChange={(e) => setSelectedResourceId(e.target.value)}
+                className="w-full p-2 border rounded"
+                disabled={!selectedResourceType}
+              >
+                <option value="">-- Select Resource --</option>
+                {filteredResources.map((resource) => (
+                  <option key={resource.id} value={resource.id}>{resource.name}</option>
+                ))}
+              </select>
+            </Step>
 
-                                {quickBookStep === 4 && !quickBookEmailSent && (
-                                    <Button className="bg-[#666565] border-[#27548A] hover:bg-[#111924] text-white" onClick={handleSendQuickBookEmail} disabled={!selectedStartTime || !selectedEndTime}>
-                                        Send Confirmation Email
-                                    </Button>
-                                )}
-                                {quickBookStep === 4 && quickBookEmailSent && (
-                                    <Button className="bg-[#211f3e] border-[#27548A] hover:bg-[#111924] text-white" onClick={handleQuickBook} >
-                                        Confirm Booking
-                                    </Button>
-                                )}
-                                </div>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
+            <Step>
+              <h2 className="text-xl font-semibold mb-2">Pick a Date</h2>
+              <p className="text-sm text-gray-600 mb-3">Choose the date for your booking</p>
+              <Popover>
+                <PopoverTrigger>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full border-2 border-gray-800 justify-center text-center font-normal h-auto p-2",
+                      !selectedDate && "text-muted-foreground",
+                      selectedDate && "text-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? (
+                      format(selectedDate, "PP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white border border-gray-200 shadow-lg">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      setSelectedDate(date);
+                    }}
+                    disabled={(date) => date < startOfDay(new Date())}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </Step>
 
+            <Step>
+              <h2 className="text-xl font-semibold mb-2">Select Time</h2>
+              <p className="text-sm text-gray-600 mb-3">Choose your start and end times</p>
+              
+              <div className="space-y-4 mb-10">
+                <label className="block font-medium mb-1">Time</label>
+                <div className="flex flex-wrap gap-2">
+                  {TIME_SLOTS.map((time, index) => {
+                    const isAvailable = availableTimes.includes(time);
+                    
+                    const handleTimeClick = () => {
+                      if (!isAvailable) return;
+
+                      if (!selectedStartTime || (selectedStartTime && selectedEndTime)) {
+                        setSelectedStartTime(time);
+                        setSelectedEndTime('');
+                      } else {
+                        if (time > selectedStartTime) {
+                          const startIndex = TIME_SLOTS.indexOf(selectedStartTime);
+                          const endIndex = TIME_SLOTS.indexOf(time);
+                          const isRangeValid = TIME_SLOTS.slice(startIndex, endIndex).every(slot => availableTimes.includes(slot));
+                          
+                          if (isRangeValid) {
+                            setSelectedEndTime(time);
+                          } else {
+                            toast({
+                              variant: "destructive",
+                              title: "Invalid selection",
+                              description: "Time range cannot include booked slots."
+                            });
+                          }
+                        } else {
+                          // If end time is selected before start time, treat as new start time
+                          setSelectedStartTime(time);
+                          setSelectedEndTime('');
+                        }
+                      }
+                    };
+
+                    const isStart = time === selectedStartTime;
+                    const isEnd = time === selectedEndTime;
+                    const startIndex = TIME_SLOTS.indexOf(selectedStartTime);
+                    const endIndex = TIME_SLOTS.indexOf(selectedEndTime);
+                    const isInRange = selectedStartTime && selectedEndTime && index > startIndex && index < endIndex;
+
+                    return (
+                      <Button
+                        key={time}
+                        variant="outline"
+                        onClick={handleTimeClick}
+                        disabled={!isAvailable}
+                        className={`rounded-full ${
+                          !isAvailable
+                            ? 'bg-red-100 text-red-700 cursor-not-allowed'
+                            : isStart || isEnd
+                            ? 'bg-blue-500 text-white hover:bg-blue-600'
+                            : isInRange
+                            ? 'bg-blue-200'
+                            : 'bg-green-100 text-green-800 hover:bg-green-200'
+                        }`}
+                      >
+                        {time}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                {/* Selection Summary */}
+                {selectedStartTime && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm font-medium text-blue-800">
+                      {selectedEndTime 
+                        ? `Selected: ${selectedStartTime} - ${selectedEndTime}`
+                        : `Start time: ${selectedStartTime} (click another time for end time)`
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Step>
+
+            <Step>
+              <h2 className="text-xl font-semibold mb-2">Confirmation</h2>
+              <p className="text-sm text-gray-600 mb-3">Review your booking details and send confirmation email</p>
+              <div className="space-y-4">
+                <div className="p-4 border rounded-lg bg-gray-50">
+                  <p><strong>Resource:</strong> {allResources.find(r => r.id === selectedResourceId)?.name}</p>
+                  <p><strong>Date:</strong> {selectedDate ? format(selectedDate, 'PPP') : 'N/A'}</p>
+                  <p><strong>Time:</strong> {selectedStartTime && selectedEndTime ? `${selectedStartTime} - ${selectedEndTime}` : 'N/A'}</p>
+                </div>
+                <Button 
+                  onClick={handleSendQuickBookEmail} 
+                  disabled={quickBookEmailSent}
+                  className="border-2 border-gray-800 bg-gray-300 hover:bg-gray-400 w-full"
+                >
+                  {quickBookEmailSent ? 'Email Sent ✓' : 'Send Confirmation Email'}
+                </Button>
+                <p className="text-xs text-center text-gray-500">You must send a confirmation email before you can complete the booking.</p>
+              </div>
+            </Step>
+          </Stepper>
+        </DialogContent>
+      </Dialog>
                     {/* Main Content Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                         <Card className="lg:col-span-2 bg-white border-[#27548A]">
