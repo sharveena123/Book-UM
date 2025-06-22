@@ -88,11 +88,11 @@ const imagePaths = [
               <span className="text-xl font-bold">Book@UM</span>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link to="/login">Sign In</Link>
+              <Button className="border border-[#27548A] hover:bg-[#c8c9ca] text-[#27548A]" variant="ghost" asChild>
+                <Link to="/login">Log In</Link>
               </Button>
-              <Button asChild>
-                <Link to="/register">Get Started</Link>
+              <Button className="bg-[#27548A] hover:bg-[#111924] text-white" asChild>
+                <Link to="/register">Sign Up</Link>
               </Button>
             </div>
           </div>
