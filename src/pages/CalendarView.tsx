@@ -233,7 +233,7 @@ const CalendarView: React.FC = () => {
             const bookingEnd = new Date(b.end_time);
             return slotStart >= bookingStart && slotStart < bookingEnd;
           });
-          const isSelected = selectedSlots.some(s => s.start.getTime() === normalizeDate(slotStart).getTime());
+          const isSelected = selectedSlots.some(s => s.start.getTime() === slotStart.getTime());
 
           let status = 'Available';
           if (isPast) status = 'Past';
