@@ -391,6 +391,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                 onClick={handleSendEmail}
                 disabled={emailLoading || !canEdit || !selectedStartTime || !selectedEndTime}
                 size="sm"
+                className="bg-[#b9b8b8] hover:bg-[#888989] text-black"
               >
                 {emailLoading ? (
                   <>
@@ -409,6 +410,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                 onClick={handleConfirmUpdate}
                 disabled={loading}
                 size="sm"
+                className="bg-[#17194b] hover:bg-[#000000] text-white"
               >
                 {loading ? 'Updating...' : 'Confirm Update'}
               </Button>
