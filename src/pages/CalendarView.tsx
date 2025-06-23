@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,10 +39,19 @@ const CalendarView: React.FC = () => {
   const [resource, setResource] = useState<Resource | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [week, setWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [selectedDay, setSelectedDay] = useState<Date>(() => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+    // If today is in this week, use today, else use weekStart
+    return today >= weekStart && today <= addDays(weekStart, 6) ? today : weekStart;
+  });
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<{ start: Date; end: Date }[]>([]);
   const [bookingRange, setBookingRange] = useState<{ start: Date; end: Date } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  const columnRefs = useRef<(HTMLTableCellElement | null)[]>([]);
 
   useEffect(() => {
     if (resourceId) {
@@ -81,6 +90,20 @@ const CalendarView: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [resourceId]);
+
+  useEffect(() => {
+    const dayIndex = Array.from({ length: 7 }, (_, i) => {
+      const day = addDays(week, i);
+      return (
+        day.getDate() === selectedDay.getDate() &&
+        day.getMonth() === selectedDay.getMonth() &&
+        day.getFullYear() === selectedDay.getFullYear()
+      );
+    }).findIndex(Boolean);
+    if (dayIndex !== -1 && columnRefs.current[dayIndex]) {
+      columnRefs.current[dayIndex]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [selectedDay, week]);
 
   const fetchResource = async () => {
     setLoading(true);
@@ -191,7 +214,7 @@ const CalendarView: React.FC = () => {
 
     return hours.map(hour => (
       <tr key={hour}>
-        <td className="p-2 text-sm text-center text-gray-500">{`${hour}:00`}</td>
+        <td className="p-2 text-sm text-center text-gray-500 sticky left-0 z-10 bg-white border-r border-gray-200">{`${hour}:00`}</td>
         {days.map(day => {
           const slotStart = new Date(day.setHours(hour, 0, 0, 0));
           const slotEnd = new Date(day.setHours(hour + 1, 0, 0, 0));
@@ -254,7 +277,7 @@ const CalendarView: React.FC = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gray-50 pt-16">
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-8 px-2 sm:px-4 lg:px-8">
           <Card className="mb-8">
               <CardHeader>
                 <CardTitle className="text-2xl">{resource.name}</CardTitle>
@@ -269,16 +292,18 @@ const CalendarView: React.FC = () => {
               </CardContent>
             </Card>
 
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-white p-2 sm:p-6 rounded-lg shadow-md">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mb-4">
               <h2 className="text-xl font-bold flex items-center"><Clock className="h-6 w-6 mr-2" />Weekly Calendar</h2>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="icon" onClick={() => setWeek(subWeeks(week, 1))}><ChevronLeft className="h-4 w-4" /></Button>
-                <span className="text-lg font-semibold">{format(week, 'MMMM yyyy')}</span>
-                <Button variant="outline" size="icon" onClick={() => setWeek(addWeeks(week, 1))}><ChevronRight className="h-4 w-4" /></Button>
-                <Popover>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="icon" onClick={() => { const newWeek = subWeeks(week, 1); setWeek(newWeek); setSelectedDay(newWeek); }}><ChevronLeft className="h-4 w-4" /></Button>
+                  <span className="text-lg font-semibold">{format(week, 'MMMM yyyy')}</span>
+                  <Button variant="outline" size="icon" onClick={() => { const newWeek = addWeeks(week, 1); setWeek(newWeek); setSelectedDay(newWeek); }}><ChevronRight className="h-4 w-4" /></Button>
+                </div>
+                <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="ml-2">
+                    <Button variant="outline" className="ml-0 sm:ml-2 w-full sm:w-auto">
                       <CalendarIcon className="h-4 w-4 mr-2" />
                       Select Date
                     </Button>
@@ -286,34 +311,61 @@ const CalendarView: React.FC = () => {
                   <PopoverContent className="w-auto p-0 bg-white">
                     <Calendar
                       mode="single"
-                      selected={week}
+                      selected={selectedDay}
                       onSelect={(date) => {
                         if (date) {
                           setWeek(startOfWeek(date, { weekStartsOn: 1 }));
+                          setSelectedDay(date);
+                          setTimeout(() => setPopoverOpen(false), 50);
                         }
                       }}
-                      initialFocus
+                      classNames={{
+                        day_selected: "bg-blue-500/30 text-blue-900 font-bold rounded-full"
+                      }}
                     />
                   </PopoverContent>
                 </Popover>
               </div>
-          </div>
+            </div>
 
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="p-2 text-sm font-semibold">Time</th>
-                  {Array.from({ length: 7 }, (_, i) => addDays(week, i)).map(day => (
-                    <th key={day.toISOString()} className="p-2  text-sm font-semibold">
-                      {format(day, 'EEE')} <br /> {format(day, 'd')}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {renderTimeSlots()}
-              </tbody>
-            </table>
+            {/* Responsive table wrapper */}
+            <div className="overflow-x-auto -mx-2 sm:mx-0 mb-4">
+              <table className="w-full min-w-[700px] border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="p-2 text-xs sm:text-sm font-semibold sticky left-0 z-10 bg-white border-r border-gray-200">Time</th>
+                    {Array.from({ length: 7 }, (_, i) => {
+                      const day = addDays(week, i);
+                      const isSelected =
+                        day.getDate() === selectedDay.getDate() &&
+                        day.getMonth() === selectedDay.getMonth() &&
+                        day.getFullYear() === selectedDay.getFullYear();
+                      return (
+                        <th
+                          key={day.toISOString()}
+                          className="p-2 text-xs sm:text-sm font-semibold"
+                          ref={el => (columnRefs.current[i] = el)}
+                        >
+                          {format(day, 'EEE')} <br />
+                          <span
+                            className={
+                              isSelected
+                                ? 'inline-block px-2 py-1 bg-blue-500/30 rounded-full text-blue-900 font-bold transition'
+                                : ''
+                            }
+                          >
+                            {format(day, 'd')}
+                          </span>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {renderTimeSlots()}
+                </tbody>
+              </table>
+            </div>
             
           {selectedSlots.length > 0 && (
               <div className="mt-6 text-center">
