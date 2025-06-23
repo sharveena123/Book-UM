@@ -221,7 +221,8 @@ const CalendarView: React.FC = () => {
           const isPast = isBefore(slotStart, now);
           const booking = bookings.find(b => {
             const bookingStart = new Date(b.start_time);
-            return bookingStart.getTime() === slotStart.getTime();
+            const bookingEnd = new Date(b.end_time);
+            return slotStart >= bookingStart && slotStart < bookingEnd;
           });
           const isSelected = selectedSlots.some(s => s.start.getTime() === slotStart.getTime());
 
