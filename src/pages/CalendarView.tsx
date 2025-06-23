@@ -30,6 +30,12 @@ interface Booking {
   user_id: string;
 }
 
+function normalizeDate(date: Date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 const CalendarView: React.FC = () => {
   const { resourceId } = useParams<{ resourceId: string }>();
   const navigate = useNavigate();
@@ -147,7 +153,7 @@ const CalendarView: React.FC = () => {
     }
 
     // Move the blue circle to the selected date
-    setSelectedDay(new Date(start));
+    setSelectedDay(normalizeDate(start));
 
     const newSlot = { start, end };
     
@@ -227,7 +233,7 @@ const CalendarView: React.FC = () => {
             const bookingEnd = new Date(b.end_time);
             return slotStart >= bookingStart && slotStart < bookingEnd;
           });
-          const isSelected = selectedSlots.some(s => s.start.getTime() === slotStart.getTime());
+          const isSelected = selectedSlots.some(s => s.start.getTime() === normalizeDate(slotStart).getTime());
 
           let status = 'Available';
           if (isPast) status = 'Past';
@@ -341,9 +347,7 @@ const CalendarView: React.FC = () => {
                     {Array.from({ length: 7 }, (_, i) => {
                       const day = addDays(week, i);
                       const isSelected =
-                        day.getDate() === selectedDay.getDate() &&
-                        day.getMonth() === selectedDay.getMonth() &&
-                        day.getFullYear() === selectedDay.getFullYear();
+                        normalizeDate(day).getTime() === normalizeDate(selectedDay).getTime();
                       return (
                         <th
                           key={day.toISOString()}
