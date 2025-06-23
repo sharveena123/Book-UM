@@ -145,7 +145,10 @@ const CalendarView: React.FC = () => {
       toast({ variant: "destructive", title: "Authentication required", description: "Please sign in to make a booking" });
       return;
     }
-    
+
+    // Move the blue circle to the selected date
+    setSelectedDay(new Date(start));
+
     const newSlot = { start, end };
     
     // Handle deselection by clearing all slots to enforce a new contiguous selection
